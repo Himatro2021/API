@@ -12,3 +12,7 @@
   - GET
   - Require login
   - Authentication method: Bearer
+
+
+## Host
+api.himatro.luckyakbar.tech
