@@ -3,3 +3,4 @@ postgres_data/
 private_data/
 tmp/
 cmd.go
+docker-compose.yml
