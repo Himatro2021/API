@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=lucky
+      - POSTGRES_PASSWORD=lucky123
+      - POSTGRES_DB=himatro
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    ports:
+      - "54132:5432"
+    
