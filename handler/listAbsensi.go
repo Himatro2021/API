@@ -1,35 +1,36 @@
 package handler
 
 import (
-	"fmt"
-	"himatro-api/db"
-	"himatro-api/models"
+	"himatro-api/controller"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
-func ListAbsensi(c echo.Context) error {
-	var res []models.AnggotaBiasa
+func GetAbsentList(c echo.Context) error {
+	absentID, err := strconv.Atoi(c.Param("absentID"))
 
-	query := db.DB.Where("npm != ?", "1").Find(&res)
-
-	if query.Error != nil {
-		response := ErrorMessage{
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
-			Message: "Query error.",
-		}
-
-		return c.JSON(http.StatusBadRequest, response)
+			Message: "Invalid absentID. Must be a number.",
+		})
 	}
 
-	fmt.Println()
+	absentList, err := controller.GetAbsentList(absentID)
 
-	response := AbsentListSuccessMessage{
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, ErrorMessage{
+			OK:      false,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, SuccessListAbsent{
 		OK:     true,
-		Status: 200,
-		Result: res,
-	}
-
-	return c.JSON(http.StatusOK, response)
+		FormID: absentID,
+		Total:  len(absentList),
+		List:   absentList,
+	})
 }
