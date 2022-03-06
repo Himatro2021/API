@@ -1,6 +1,9 @@
 package handler
 
-import "himatro-api/models"
+import (
+	"himatro-api/models"
+	"time"
+)
 
 type AbsentListSuccessMessage struct {
 	OK     bool                  `json:"ok"`
@@ -16,4 +19,22 @@ type ErrorMessage struct {
 type LoginTokenResp struct {
 	OK    bool   `json:"ok"`
 	Token string `json:"token"`
+}
+
+type SuccessCreateAbsent struct {
+	OK                          bool      `json:"ok"`
+	AbsentID                    uint      `json:"absentID"`
+	Title                       string    `json:"title"`
+	Participant                 int       `json:"participant"`
+	StartAt                     time.Time `json:"startAt"`
+	FinishAt                    time.Time `json:"finishAt"`
+	RequireAttendanceImageProof bool      `json:"requireAttendanceImageProof"`
+	RequireExecuseImageProof    bool      `json:"requireExecuseImageProof"`
+}
+
+type SuccessListAbsent struct {
+	OK     bool                        `json:"ok"`
+	FormID int                         `json:"formID"`
+	Total  int                         `json:"total"`
+	List   []models.ReturnedAbsentList `json:"list"`
 }
