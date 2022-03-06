@@ -9,5 +9,10 @@ import (
 type FormAbsensi struct {
 	gorm.Model
 
-	ClosedAt time.Time
+	Title                       string    `gorm:"not null"`
+	Participant                 int       `gorm:"not null"`
+	StartAt                     time.Time `gorm:"not null"`
+	FinishAt                    time.Time `gorm:"not null"`
+	RequireAttendanceImageProof bool      `gorm:"not null"`
+	RequireExecuseImageProof    bool      `gorm:"not null"`
 }
