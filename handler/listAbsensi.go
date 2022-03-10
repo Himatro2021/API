@@ -27,6 +27,13 @@ func GetAbsentList(c echo.Context) error {
 		})
 	}
 
+	if len(absentList) == 0 {
+		return c.JSON(http.StatusNotFound, ErrorMessage{
+			OK:      false,
+			Message: "Absent list is not found. Please use valid absentID.",
+		})
+	}
+
 	return c.JSON(http.StatusOK, SuccessListAbsent{
 		OK:     true,
 		FormID: absentID,
