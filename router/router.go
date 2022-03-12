@@ -20,6 +20,12 @@ func Router() *echo.Echo {
 
 	e.GET("/admin", handler.Admin)
 	e.POST("/admin/absensi", handler.InitAbsent, middleware.RequireLogin)
+	e.PATCH("/admin/absensi/:absentID/title", handler.UpdateFormTitle, middleware.RequireLogin)
+	e.PATCH("/admin/absensi/:absentID/participant", handler.UpdateFormParticipant, middleware.RequireLogin)
+	e.PATCH("/admin/absensi/:absentID/startAt", handler.UpdateFormStartAt, middleware.RequireLogin)
+	e.PATCH("/admin/absensi/:absentID/finishAt", handler.UpdateAbsentFormFinishAt, middleware.RequireLogin)
+	e.PATCH("/admin/absensi/:absentID/attendanceImageProof", handler.UpdateAbsentFormAttendanceImageProof, middleware.RequireLogin)
+	e.PATCH("/admin/absensi/:absentID/execuseImageProof", handler.UpdateAbsentFormExecuseImageProof, middleware.RequireLogin)
 
 	return e
 }
