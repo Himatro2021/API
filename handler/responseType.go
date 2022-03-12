@@ -38,3 +38,10 @@ type SuccessListAbsent struct {
 	Total  int                         `json:"total"`
 	List   []models.ReturnedAbsentList `json:"list"`
 }
+
+type SuccessUpdateForm struct {
+	OK        bool   `json:"ok"`
+	Message   string `json:"message"`
+	FieldName string `json:"fieldName"`
+	Value     string `json:"value"`
+}
