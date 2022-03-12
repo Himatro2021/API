@@ -73,6 +73,10 @@ func ExtractInitAbsentPayload(c echo.Context) (InitAbsentPayload, error) {
 		return initAbsentPayload, errors.New("absent form can't finish before current date")
 	}
 
+	if start.String() == end.String() {
+		return initAbsentPayload, errors.New("form absent cant't start and end in the same time")
+	}
+
 	participantCode, err := validateParticipantCode(participant)
 
 	if err != nil {
