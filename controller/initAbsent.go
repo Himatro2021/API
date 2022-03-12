@@ -41,13 +41,13 @@ func ExtractInitAbsentPayload(c echo.Context) (InitAbsentPayload, error) {
 		return initAbsentPayload, errors.New("all required field must not empty")
 	}
 
-	if requireAttendanceImageProof != "true" {
+	if requireAttendanceImageProof == "true" {
 		initAbsentPayload.RequireAttendanceImageProof = true
 	} else {
 		initAbsentPayload.RequireAttendanceImageProof = false
 	}
 
-	if requireExecuseImageProof != "true" {
+	if requireExecuseImageProof == "true" {
 		initAbsentPayload.RequireExecuseImageProof = true
 	} else {
 		initAbsentPayload.RequireExecuseImageProof = false
