@@ -25,6 +25,10 @@ func FillAbsentForm(absentID int, NPM string, keterangan string) error {
 		return fmt.Errorf("you are not the expected attendance of this absent form")
 	}
 
+	if err := isAlreadyAttend(absentID, NPM); err != nil {
+		return err
+	}
+
 	saveAttendanceRecord(absentID, NPM, keterangan)
 
 	return nil
@@ -80,6 +84,26 @@ func getPengurusData(NPM string) (models.Pengurus, error) {
 	return pengurus, nil
 }
 
+func isAlreadyAttend(absentID int, NPM string) error {
+	absentList := models.AbsentList{}
+
+	res := db.DB.Model(&models.AbsentList{}).
+		Where(&models.AbsentList{
+			FormAbsensiID: uint(absentID),
+			NPM:           NPM,
+		}).First(&absentList)
+
+	if res.Error != nil {
+		return errors.New("failed to fill attendance record")
+	}
+
+	if absentList.Keterangan != "?" {
+		return fmt.Errorf("attendant with NPM: %s is alredy filled this form", NPM)
+	}
+
+	return nil
+}
+
 func saveAttendanceRecord(absentID int, NPM string, keterangan string) error {
 	res := db.DB.Model(&models.AbsentList{}).
 		Where(&models.AbsentList{
@@ -93,5 +117,4 @@ func saveAttendanceRecord(absentID int, NPM string, keterangan string) error {
 	}
 
 	return nil
-
 }
