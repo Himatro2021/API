@@ -242,6 +242,62 @@ The live version of this API are already proudly hosted at: **https://api.himatr
   You can change the status of whether the participant must send image or not when they are can't attend the event. This change will not affect people who are already fill the form. This feature will automatically active when the backend already enable this feature. You will receive **400 Bad Request** along with error message if the validation returns error.
   <br><br>
 
+
+### Non Admin Menu
+
+- ### Check Form Absent is Writeable
+  - Route: **/absensi/:absentID**
+  - Method: **GET**
+  - Accepted Content Type / Payload: **form url encoded**
+  - URL params: <br>
+    1. absentID
+        - type: numeric string
+        - required: true
+  - URL query: **none**
+  - Payload: **none**
+  - Success Response Payload: **none**
+  - Note:<br>
+    This endpoint used to check wheter the user can fill the absent form. If the server returns **200 OK**, you should render absent form filling page. Otherwise, it means that the form is not writeable, so server will response with **400 Bad Request** alongside with error message.
+
+- ### Get Absent Form Result
+  - Route: **/absensi/:absentID/result**
+  - Method: **GET**
+  - Accepted Content Type / Payload: **form url encoded**
+  - URL params: <br>
+    1. absentID
+        - type: numeric string
+        - required: true
+  - URL query: **none**
+  - Payload: **none**
+  - Success Response Payload: <br>
+    1. ok: boolean
+    2. formID: int
+    3. total: int
+    4. list: array -> npm, updatedAt, keterangan, nama, departemen (all string)
+  - Note:<br>
+    This endpoint will give you absent result no matter if the form it self is already closed or not even open yet. The field total in the response payload represent how many participants are in the list. If you're trying to request inexisting / request with invalid *absentID*, server will response with **400 Bad Request** alongside with error message.
+
+- ### Fill Absent Form
+  - Route: **/absensi/:absentID**
+  - Method: **POST**
+  - Accepted Content Type / Payload: **form url encoded**
+  - URL params: <br>
+    1. absentID
+        - type: numeric string
+        - required: true
+  - URL query: **none**
+  - Payload <br>
+    1. NPM
+        - type: string
+        - required: true
+    2. keterangan
+        - type: string
+        - required: true
+        - allowed values: **"h"** or **"i"**
+  - Success Response Payload: **none**
+  - Note:<br>
+    This endpoint will only accept right NPM as a proof that this NPM are owned by registered himatro's member and also one of the expected absent attendance. This endpoint can only be used to fill the absent form if the participant never filled the absent before. If you need to change the absent list after filling, you should use the **PATCH** method.
+
 ## Defined Departement Name
 1. Pengurus Harian -> PH
 2. Departemen Pendidikan dan Pengembangan Diri -> PPD
