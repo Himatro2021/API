@@ -93,5 +93,4 @@ func saveAttendanceRecord(absentID int, NPM string, keterangan string) error {
 	}
 
 	return nil
-
 }
