@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"himatro-api/controller"
 	"net/http"
 	"strconv"
@@ -8,29 +9,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetAbsentList(c echo.Context) error {
+func GetAbsentResult(c echo.Context) error {
 	absentID, err := strconv.Atoi(c.Param("absentID"))
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
-			Message: "Invalid absentID. Must be a number.",
+			Message: "Param: absentID must be a valid numeric string.",
 		})
 	}
 
-	absentList, err := controller.GetAbsentList(absentID)
+	absentList, err := controller.GetAbsentListResult(absentID)
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, ErrorMessage{
+		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
-			Message: err.Error(),
-		})
-	}
-
-	if len(absentList) == 0 {
-		return c.JSON(http.StatusNotFound, ErrorMessage{
-			OK:      false,
-			Message: "Absent list is not found. Please use valid absentID.",
+			Message: fmt.Sprintf("Failed to get requested absent list because: %s", err.Error()),
 		})
 	}
 
