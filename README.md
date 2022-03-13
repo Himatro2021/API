@@ -34,14 +34,14 @@ The live version of this API are already proudly hosted at: **https://api.himatr
   - Return type: **JSON**
   - Success Response Payload:<br>  
     1. ok
-      - type: boolean
+        - type: boolean
     2. token
-      - type: string
+        - type: string
   - Failed Response Payload:<br>
     1. ok
-      - type: boolean
+        - type: boolean
     2. message
-      - type: string
+        - type: string
   - Note:<br>
     When using this route, remember to use the received token as bearer authorization to access restricted resource
   <br> <br>
