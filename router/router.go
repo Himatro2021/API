@@ -17,6 +17,9 @@ func Router() *echo.Echo {
 	e.GET("/", handler.HomeGet)
 	e.POST("/login", handler.Login)
 
+	e.GET("/absensi/:absentID", handler.CheckAbsentForm)
+	e.POST("/absensi/:absentID", handler.FillAbsentForm)
+
 	e.GET("/absensi/:absentID/result", handler.GetAbsentResult)
 
 	e.GET("/admin", handler.Admin)
