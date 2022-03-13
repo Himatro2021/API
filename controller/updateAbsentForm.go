@@ -37,6 +37,10 @@ func UpdateParticipant(formID int, newParticipant string) error {
 		return nil
 	}
 
+	if err := isParticipantChangeable(formID); err != nil {
+		return err
+	}
+
 	updateFormParticipant(formID, participantCode)
 	deleteOldAbsentList(formID)
 
