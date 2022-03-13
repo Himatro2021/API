@@ -15,8 +15,9 @@ func Router() *echo.Echo {
 	e.Use(echoMiddleware.Logger())
 
 	e.GET("/", handler.HomeGet)
-	e.GET("/absensi/:absentID", handler.GetAbsentList)
 	e.POST("/login", handler.Login)
+
+	e.GET("/absensi/:absentID", handler.GetAbsentList)
 
 	e.GET("/admin", handler.Admin)
 	e.POST("/admin/absensi", handler.InitAbsent, middleware.RequireLogin)
