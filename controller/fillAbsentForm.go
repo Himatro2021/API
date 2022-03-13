@@ -25,6 +25,10 @@ func FillAbsentForm(absentID int, NPM string, keterangan string) error {
 		return fmt.Errorf("you are not the expected attendance of this absent form")
 	}
 
+	if err := isAlreadyAttend(absentID, NPM); err != nil {
+		return err
+	}
+
 	saveAttendanceRecord(absentID, NPM, keterangan)
 
 	return nil
