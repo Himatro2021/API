@@ -37,6 +37,10 @@ func UpdateParticipant(formID int, newParticipant string) error {
 		return nil
 	}
 
+	if err := isParticipantChangeable(formID); err != nil {
+		return err
+	}
+
 	updateFormParticipant(formID, participantCode)
 	deleteOldAbsentList(formID)
 
@@ -209,4 +213,25 @@ func updateFormParticipant(formID int, newParticipant int) {
 	absentForm.Participant = newParticipant
 
 	db.DB.Save(&absentForm)
+}
+
+func isParticipantChangeable(absentID int) error {
+	absentLists := []models.AbsentList{}
+
+	res := db.DB.Model(&models.AbsentList{}).
+		Where(&models.AbsentList{
+			FormAbsensiID: uint(absentID),
+		}).Find(&absentLists)
+
+	if res.Error != nil {
+		return errors.New("failed to change participant of an absent form")
+	}
+
+	for _, absentList := range absentLists {
+		if absentList.Keterangan != "?" {
+			return fmt.Errorf("participant of absent form with ID: %d can't be changed because some participants are already fill it", absentID)
+		}
+	}
+
+	return nil
 }
