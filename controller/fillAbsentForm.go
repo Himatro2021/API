@@ -59,6 +59,22 @@ func IsFormWriteable(absentID int) error {
 	return nil
 }
 
+func UpdateAbsentListByAttendant(absentID int, keterangan string, cookie *http.Cookie) error {
+	tokenPayload := auth.UpdateAbsentListClaims{}
+
+	if err := auth.ExtractJWTPayload(cookie.Value, &tokenPayload); err != nil {
+		return fmt.Errorf("update absent failed because: %s", err.Error())
+	}
+
+	if absentID != int(tokenPayload.AbsentID) {
+		return fmt.Errorf("token mismatch with absentID requested")
+	}
+
+	updateAttendanceRecord(absentID, tokenPayload.NPM, keterangan)
+
+	return nil
+}
+
 func getFormAbsentDetail(absentID int) (models.FormAbsensi, error) {
 	formAbsent := models.FormAbsensi{}
 
@@ -121,6 +137,24 @@ func saveAttendanceRecord(absentID int, NPM string, keterangan string) error {
 
 	if res.Error != nil {
 		return errors.New("system failure to save absent record")
+	}
+
+	return nil
+}
+
+func updateAttendanceRecord(absentID int, NPM string, keterangan string) error {
+	absentList := models.AbsentList{
+		FormAbsensiID: uint(absentID),
+		NPM:           NPM,
+	}
+
+	res := db.DB.Model(&models.AbsentList{}).
+		Where(&absentList).
+		First(&absentList).
+		Update("keterangan", keterangan)
+
+	if res.Error != nil {
+		return errors.New("server failed to update absent list")
 	}
 
 	return nil
