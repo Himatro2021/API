@@ -19,6 +19,7 @@ func Router() *echo.Echo {
 
 	e.GET("/absensi/:absentID", handler.CheckAbsentForm)
 	e.POST("/absensi/:absentID", handler.FillAbsentForm)
+	e.PATCH("/absensi/:absentID", handler.UpdateAbsentListByAttendant)
 
 	e.GET("/absensi/:absentID/result", handler.GetAbsentResult)
 
