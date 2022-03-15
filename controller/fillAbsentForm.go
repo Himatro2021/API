@@ -3,8 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"himatro-api/auth"
 	"himatro-api/db"
 	"himatro-api/models"
+	"net/http"
 	"time"
 )
 
