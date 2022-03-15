@@ -296,7 +296,25 @@ The live version of this API are already proudly hosted at: **https://api.himatr
         - allowed values: **"h"** or **"i"**
   - Success Response Payload: **none**
   - Note:<br>
-    This endpoint will only accept right NPM as a proof that this NPM are owned by registered himatro's member and also one of the expected absent attendance. This endpoint can only be used to fill the absent form if the participant never filled the absent before. If you need to change the absent list after filling, you should use the **PATCH** method.
+    This endpoint will only accept right NPM as a proof that this NPM are owned by registered himatro's member and also one of the expected absent attendance. This endpoint can only be used to fill the absent form if the participant never filled the absent before. If you need to change the absent list after filling, you should use the **PATCH** method. Also this endpoint will give you update absent list token to be use when you want to change / update your presence status.
+
+- ### Update Absent List
+  - Route: **/absensi/:absentID**
+  - Method: **PATCH**
+  - Accepted Content Type / Payload: **form url encoded**
+  - URL params: <br>
+    1. absentID
+        - type: numeric string
+        - required: true
+  - URL query: **none**
+  - Payload <br>
+    1. keterangan
+        - type: string
+        - required: true
+        - allowed values: **"h"** or **"i"**
+  - Success Response Payload: **none**
+  - Note:<br>
+    This endpoint will only accept your payload and read your update absent list token cookie. If there is error or absence in your token, you will not able to update your presence status. If server accepts your request, it will give you only **202 Accepted** response.
 
 ## Defined Departement Name
 1. Pengurus Harian -> PH
