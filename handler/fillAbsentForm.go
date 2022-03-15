@@ -66,12 +66,27 @@ func FillAbsentForm(c echo.Context) error {
 		})
 	}
 
-	if err := controller.FillAbsentForm(absentID, NPM, keterangan); err != nil {
+	updateToken, err := controller.FillAbsentForm(absentID, NPM, keterangan)
+
+	if err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
 			Message: fmt.Sprintf("Failed to fill absent form because: %s", err.Error()),
 		})
 	}
+
+	updateTokenExpiresSec, err := strconv.Atoi(os.Getenv("UPDATE_ABSENT_LIST_TOKEN_EXP_SEC"))
+
+	if err != nil {
+		updateTokenExpiresSec = 3600 // 1 hour expiry
+	}
+
+	cookie := new(http.Cookie)
+	cookie.Name = os.Getenv("UPDATE_ABSENT_LIST_COOKIE_NAME")
+	cookie.Value = updateToken
+	cookie.Expires = time.Now().Add(time.Second * time.Duration(updateTokenExpiresSec))
+
+	c.SetCookie(cookie)
 
 	return nil
 }
