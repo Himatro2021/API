@@ -90,3 +90,40 @@ func FillAbsentForm(c echo.Context) error {
 
 	return nil
 }
+
+func UpdateAbsentListByAttendant(c echo.Context) error {
+	cookie, err := c.Cookie(os.Getenv("UPDATE_ABSENT_LIST_COOKIE_NAME"))
+
+	if err != nil {
+		return c.JSON(http.StatusForbidden, ErrorMessage{
+			OK:      false,
+			Message: "Please provide update absent token.",
+		})
+	}
+
+	keterangan := c.FormValue("keterangan")
+	absentID, err := strconv.Atoi(c.Param("absentID"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorMessage{
+			OK:      false,
+			Message: "absentID must be a valid numeric string",
+		})
+	}
+
+	if keterangan == "" || (keterangan != "h" && keterangan != "i") {
+		return c.JSON(http.StatusBadRequest, ErrorMessage{
+			OK:      false,
+			Message: "All required field must not empty and use only valid value.",
+		})
+	}
+
+	if err := controller.UpdateAbsentListByAttendant(absentID, keterangan, cookie); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorMessage{
+			OK:      false,
+			Message: fmt.Sprintf("Failed to update absent list because: %s", err.Error()),
+		})
+	}
+
+	return c.NoContent(http.StatusAccepted)
+}
