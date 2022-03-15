@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"himatro-api/controller"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 )
 
