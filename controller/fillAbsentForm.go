@@ -32,8 +32,13 @@ func FillAbsentForm(absentID int, NPM string, keterangan string) (string, error)
 	}
 
 	saveAttendanceRecord(absentID, NPM, keterangan)
+	updateToken, err := auth.CreateUpdateAbsentListToken(absentID, NPM)
 
-	return nil
+	if err != nil {
+		return "", nil
+	}
+
+	return updateToken, nil
 }
 
 func IsFormWriteable(absentID int) error {
