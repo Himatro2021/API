@@ -55,7 +55,7 @@ func FillAbsentForm(c echo.Context) error {
 	if NPM == "" || keterangan == "" {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
-			Message: "All required field must be supplied.",
+			Message: "All required field must be supplied and using valid value.",
 		})
 	}
 
