@@ -38,7 +38,7 @@ func FillAbsentForm(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
-			Message: "Absent ID must be a valid numeri string.",
+			Message: "Absent ID must be a valid numeric string.",
 		})
 	}
 
