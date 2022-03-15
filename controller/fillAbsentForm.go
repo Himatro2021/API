@@ -10,25 +10,25 @@ import (
 	"time"
 )
 
-func FillAbsentForm(absentID int, NPM string, keterangan string) error {
+func FillAbsentForm(absentID int, NPM string, keterangan string) (string, error) {
 	pengurus, err := getPengurusData(NPM)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	formDetail, err := getFormAbsentDetail(absentID)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if formDetail.Participant != pengurus.DepartemenID && formDetail.Participant != 0 {
-		return fmt.Errorf("you are not the expected attendance of this absent form")
+		return "", fmt.Errorf("you are not the expected attendance of this absent form")
 	}
 
 	if err := isAlreadyAttend(absentID, NPM); err != nil {
-		return err
+		return "", err
 	}
 
 	saveAttendanceRecord(absentID, NPM, keterangan)
