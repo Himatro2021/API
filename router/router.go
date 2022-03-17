@@ -24,6 +24,7 @@ func Router() *echo.Echo {
 	e.GET("/absensi/:absentID/result", handler.GetAbsentResult)
 
 	e.GET("/admin", handler.Admin)
+	e.GET("/admin/absensi", handler.GetAbsentFormsDetails, middleware.RequireLogin)
 	e.POST("/admin/absensi", handler.InitAbsent, middleware.RequireLogin)
 	e.PATCH("/admin/absensi/:absentID/title", handler.UpdateFormTitle, middleware.RequireLogin)
 	e.PATCH("/admin/absensi/:absentID/participant", handler.UpdateFormParticipant, middleware.RequireLogin)
