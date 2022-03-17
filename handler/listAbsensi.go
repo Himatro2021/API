@@ -52,5 +52,10 @@ func GetAbsentFormsDetails(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, absentForms)
+	return c.JSON(http.StatusOK, SuccessFormAbsentDetails{
+		OK:      true,
+		Message: "Success",
+		Total:   len(absentForms),
+		List:    absentForms,
+	})
 }
