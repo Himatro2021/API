@@ -7,7 +7,8 @@
 - to do...
 
 ## Host
-The live version of this API are already proudly hosted at: **https://api.himatro.luckyakbar.tech**
+The live version of this API are already proudly hosted at: **https://api.himatro.luckyakbar.tech** <br>
+if you just want to test the API, you can use the staging version hosted at: **https://staging.api.himatro.luckyakbar.tech**
 
 ## Feature
 1. CRUD absent form
