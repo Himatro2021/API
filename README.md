@@ -122,6 +122,35 @@ The live version of this API are already proudly hosted at: **https://api.himatr
   - Note:<br>
   Updating title of an Absent Form can only be done with existing absent form and accessed via it's absentID. If you're tempting to perform update on non existing absent form, server will return error message with **400 Bad Request** response. The title will have the same as the value you send, and uppercase / lowercase character will not modified.
 <br><br>
+
+- #### Get Form Absent Details <br>
+  - Route: **/admin/absensi**
+  - Method: **GET**
+  - Accepted Content-Type / Payload: **none**
+  - URL Params: **none**
+  - URL Query: <br>
+    1. limit
+      - type: numeric string
+      - required: false
+      - default: null (no limit)
+  - Payload: **none**
+  - Success Response Payload:
+    1. ok: boolean
+    2. message: string
+    3. list: 
+    <br> array of:
+        - form_id: int
+        - title: string
+        - created_at: date string
+        - updated_at: date string
+        - participant_code: int
+        - require_attendance_image_proof: boolean
+        - require_execuse_image_proof: boolean
+        - total_participant: int
+        - hadir: int
+        - izin: int
+        - tanpa_keterangan: int
+<br><br>
 - #### Update Finish At from Absent Form
   - Route: **/admin/absensi/:absentID/finishAt**
   - Method: **PATCH**
