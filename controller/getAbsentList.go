@@ -7,6 +7,38 @@ import (
 	"himatro-api/models"
 )
 
+func GetAbsentFormsDetails(limit int) ([]models.ReturnedFormAbsentDetails, error) {
+	absentFormsDetails := []models.ReturnedFormAbsentDetails{}
+
+	res := db.DB.Model(&models.FormAbsensi{}).
+		Select(`
+			form_absensis.id as form_id,
+			form_absensis.title,
+			form_absensis.created_at,
+			form_absensis.updated_at,
+			form_absensis.participant as participant_code,
+			form_absensis.start_at,
+			form_absensis.finish_at,
+			form_absensis.require_attendance_image_proof,
+			form_absensis.require_execuse_image_proof,
+			count(absent_lists.id) as total_participant,
+			count(absent_lists.keterangan) filter(where absent_lists.keterangan = 'h') as hadir,
+			count(absent_lists.keterangan) filter(where absent_lists.keterangan = 'i') as izin,
+			count(absent_lists.keterangan) filter (where absent_lists.keterangan = '?') as tanpa_keterangan
+		`).
+		Limit(limit).
+		Joins("inner join absent_lists on absent_lists.form_absensi_id = form_absensis.id").
+		Group("form_id").
+		Scan(&absentFormsDetails)
+
+	if res.Error != nil {
+		return []models.ReturnedFormAbsentDetails{}, errors.New("failed to query absent forms details")
+	}
+
+	return absentFormsDetails, nil
+
+}
+
 func GetAbsentListResult(absentID int) ([]models.ReturnedAbsentList, error) {
 	if err := isFormAbsentExists(absentID); err != nil {
 		return []models.ReturnedAbsentList{}, err
