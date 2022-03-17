@@ -35,3 +35,22 @@ func GetAbsentResult(c echo.Context) error {
 		List:   absentList,
 	})
 }
+
+func GetAbsentFormsDetails(c echo.Context) error {
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+
+	if err != nil {
+		limit = 0
+	}
+
+	absentForms, err := controller.GetAbsentFormsDetails(limit)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, ErrorMessage{
+			OK:      false,
+			Message: fmt.Sprintf("Server failure to fulfill the request due to: %s", err.Error()),
+		})
+	}
+
+	return c.JSON(http.StatusOK, absentForms)
+}
