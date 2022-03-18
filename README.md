@@ -371,3 +371,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 5. Departemen Sosial dan Kewirausahaan -> KWU
 6. Departemen Pengembangan Keteknikan -> BANGTEK
 
+
+## Defined private data to initialize database
+There are several data required to run the server. Simply, you can look at .env.example content, and see the variable named like this: `ANGGOTA_BIASA_SEEDER_DATA_PATH`, or any variable ends with `SEEDER_DATA_PATH`. This file needs to be a csv file. <br>
+Because csv file need to have header, the header are defined in the .env.example file which named something like this `CSV_HEADER_CONFIG`. You should strictly follow this headers.
