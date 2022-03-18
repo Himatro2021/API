@@ -9,6 +9,7 @@ prequisite:
 2. Install docker on your machine
 3. Install docker-compose.
 4. Have required private data to initialize the database. This file locations are defined in your .env file. So feel free to store your private data. This location should be accessed by the API server. Please refer to [here](#defined-private-data-to-initialize-database) to create your own.
+5. To create super admin credentials, you can utilize our encryptor utility. To use is, just prepare your admin password, and then run this command `./cmd/encryptor`. After that, the program will ask you to type your password. The result of this program is the encrypted version of the password. So you can use that result and store it in the superAdmin.csv file.
 
 Steps:
 1. Clone or pull this repository
