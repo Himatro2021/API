@@ -16,7 +16,7 @@ services:
       - POSTGRES_PASSWORD=lucky123
       - POSTGRES_DB=himatro
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - /var/lib/postgresql/himatro_api_postgres_data:/var/lib/postgresql/data
     ports:
       - "54132:5432"
     
