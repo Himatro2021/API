@@ -376,3 +376,13 @@ if you just want to test the API, you can use the staging version hosted at: **h
 ## Defined private data to initialize database
 There are several data required to run the server. Simply, you can look at .env.example content, and see the variable named like this: `ANGGOTA_BIASA_SEEDER_DATA_PATH`, or any variable ends with `SEEDER_DATA_PATH`. This file needs to be a csv file. <br>
 Because csv file need to have header, the header are defined in the .env.example file which named something like this `CSV_HEADER_CONFIG`. You should strictly follow this headers.
+<br><br>
+
+## API TEST RESULT
+the result of testing against this API is located at: [here](https://docs.google.com/document/d/1klvQ0hIYvDtcUUbGUpmdMFxWZQV6ky8As_LxDNOqFkc/edit?usp=sharing)
+
+## TO DO LIST
+
+1. Add order_by query params in get absent forms details
+2. Add length validator in field validation time (it always the same regardless the year)
+3. Add release on github
