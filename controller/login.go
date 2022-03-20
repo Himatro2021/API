@@ -11,6 +11,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type LoginPayload struct {
+	NPM      string `json:"NPM"`
+	Password string `json:"password"`
+}
+
 func GetUserPassword(NPM string) (string, error) {
 	user := models.User{}
 
@@ -24,14 +29,17 @@ func GetUserPassword(NPM string) (string, error) {
 }
 
 func ExtractLoginPayload(c echo.Context) (string, string, error) {
-	NPM := c.FormValue("NPM")
-	password := c.FormValue("password")
+	payload := new(LoginPayload)
 
-	if NPM == "" || password == "" {
-		return NPM, password, errors.New("NPM and password must be supplied")
+	if err := c.Bind(payload); err != nil {
+		return "", "", errors.New("payload is incorrect")
 	}
 
-	return NPM, password, nil
+	if payload.NPM == "" || payload.Password == "" {
+		return "", "", errors.New("NPM and password must be supplied")
+	}
+
+	return payload.NPM, payload.Password, nil
 }
 
 func ValidatePassword(plain string, encrypted string) error {
