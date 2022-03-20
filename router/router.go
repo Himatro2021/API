@@ -13,6 +13,7 @@ func Router() *echo.Echo {
 	e := echo.New()
 
 	e.Use(echoMiddleware.Logger())
+	e.Use(echoMiddleware.CORS())
 
 	e.GET("/", handler.HomeGet)
 	e.POST("/login", handler.Login)
