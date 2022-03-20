@@ -386,3 +386,4 @@ the result of testing against this API is located at: [here](https://docs.google
 1. Add order_by query params in get absent forms details
 2. Add length validator in field validation time (it always the same regardless the year)
 3. Add release on github
+4. Change logic on finishAt update to able to finish before now (but not before start)
