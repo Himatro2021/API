@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"himatro-api/db"
-	"himatro-api/models"
-	"himatro-api/util"
+	"himatro-api/internal/db"
+	"himatro-api/internal/models"
+	"himatro-api/internal/util"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"

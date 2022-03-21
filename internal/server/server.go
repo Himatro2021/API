@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
-	"himatro-api/db"
-	"himatro-api/router"
+	"himatro-api/internal/db"
+	"himatro-api/internal/router"
 	"log"
 	"net/http"
 	"os"

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"himatro-api/controller"
+	"himatro-api/internal/controller"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

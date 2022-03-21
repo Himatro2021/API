@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"himatro-api/models"
+	"himatro-api/internal/models"
 	"time"
 )
 

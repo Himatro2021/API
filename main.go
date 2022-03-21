@@ -1,7 +1,7 @@
 package main
 
 import (
-	"himatro-api/server"
+	"himatro-api/internal/server"
 )
 
 func main() {

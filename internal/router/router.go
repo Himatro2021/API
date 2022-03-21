@@ -1,8 +1,8 @@
 package router
 
 import (
-	"himatro-api/handler"
-	"himatro-api/middleware"
+	"himatro-api/internal/handler"
+	"himatro-api/internal/middleware"
 
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 

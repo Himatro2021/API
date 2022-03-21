@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"himatro-api/db"
-	"himatro-api/models"
+	"himatro-api/internal/db"
+	"himatro-api/internal/models"
 	"log"
 	"os"
 	"strconv"

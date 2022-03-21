@@ -2,9 +2,9 @@ package controller
 
 import (
 	"errors"
-	"himatro-api/auth"
-	"himatro-api/db"
-	"himatro-api/models"
+	"himatro-api/internal/auth"
+	"himatro-api/internal/db"
+	"himatro-api/internal/models"
 
 	_ "github.com/joho/godotenv/autoload"
 
