@@ -16,4 +16,4 @@ RUN go build -o ./bin/main main.go
 
 EXPOSE 8080
 
-CMD ["./bin/main", "server", "--add-host=host.docker.internal:host-gateway"]
+CMD ["./bin/main", "server"]
