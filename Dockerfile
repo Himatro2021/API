@@ -25,7 +25,7 @@ EXPOSE 8080
 WORKDIR /app
 
 COPY .env .
-RUN go build -o /app/bin/main main.go
+RUN go build -o /app/bin/main ./src/main.go
 RUN rm -r src/
 
 CMD ["./bin/main", "server"]
