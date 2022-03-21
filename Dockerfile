@@ -15,6 +15,7 @@ RUN go mod tidy
 WORKDIR /app/src
 
 COPY . .
+RUN go build -o /app/bin/main main.go
 
 WORKDIR /app/private_data
 
@@ -25,7 +26,6 @@ EXPOSE 8080
 WORKDIR /app
 
 COPY .env .
-RUN go build -o /app/bin/main ./src/main.go
 RUN rm -r src/
 
 CMD ["./bin/main", "server"]
