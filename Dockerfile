@@ -4,6 +4,7 @@ WORKDIR /app
 
 RUN mkdir bin
 RUN mkdir src
+RUN mkdir private_data
 
 COPY go.mod .
 COPY go.sum .
@@ -15,20 +16,16 @@ WORKDIR /app/src
 
 COPY . .
 
-RUN go build -o /app/bin/main main.go
-
-WORKDIR /app
-
-RUN rm -r src/
-
-COPY .env .
-
-RUN mkdir private_data
-
 WORKDIR /app/private_data
 
 COPY private_data/ .
 
 EXPOSE 8080
+
+WORKDIR /app
+
+COPY .env .
+RUN go build -o /app/bin/main main.go
+RUN rm -r src/
 
 CMD ["./bin/main", "server"]
