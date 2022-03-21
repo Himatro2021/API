@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"himatro-api/internal/auth"
+	"himatro-api/internal/contract"
 	"himatro-api/internal/db"
 	"himatro-api/internal/models"
 
@@ -10,11 +11,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 )
-
-type LoginPayload struct {
-	NPM      string `json:"NPM"`
-	Password string `json:"password"`
-}
 
 func GetUserPassword(NPM string) (string, error) {
 	user := models.User{}
@@ -29,7 +25,7 @@ func GetUserPassword(NPM string) (string, error) {
 }
 
 func ExtractLoginPayload(c echo.Context) (string, string, error) {
-	payload := new(LoginPayload)
+	payload := new(contract.LoginPayload)
 
 	if err := c.Bind(payload); err != nil {
 		return "", "", errors.New("payload is incorrect")
