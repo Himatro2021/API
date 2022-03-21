@@ -22,6 +22,11 @@ WORKDIR /app
 RUN rm -r src/
 
 COPY .env .
+
+RUN mkdir private_data
+
+WORKDIR /app/private_data
+
 COPY private_data/ .
 
 EXPOSE 8080
