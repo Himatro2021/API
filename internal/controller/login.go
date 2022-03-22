@@ -7,8 +7,6 @@ import (
 	"himatro-api/internal/db"
 	"himatro-api/internal/models"
 
-	_ "github.com/joho/godotenv/autoload"
-
 	"github.com/labstack/echo/v4"
 )
 
