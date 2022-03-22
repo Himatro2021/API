@@ -4,12 +4,10 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
-	"os"
-
-	_ "github.com/joho/godotenv/autoload"
+	"himatro-api/internal/config"
 )
 
-var secret_key = os.Getenv("SECRET_KEY")
+var secret_key = config.SecretKey()
 var bytes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
 
 func Encrypt(plainText string) (string, error) {
