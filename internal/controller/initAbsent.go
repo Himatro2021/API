@@ -2,15 +2,14 @@ package controller
 
 import (
 	"errors"
-	"os"
 	"strings"
 	"time"
 
+	"himatro-api/internal/config"
 	"himatro-api/internal/db"
 	"himatro-api/internal/models"
 	"himatro-api/internal/util"
 
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 )
 
@@ -143,7 +142,7 @@ func parseDate(startAtDate string, startAtTime string) (time.Time, error) {
 
 	date := time.Date(year, time.Month(month), day, hour, minute, sec, 0, time.Local)
 
-	tz, _ := time.LoadLocation(os.Getenv("TZ"))
+	tz, _ := time.LoadLocation(config.TimeZone())
 
 	return date.In(tz), nil
 }

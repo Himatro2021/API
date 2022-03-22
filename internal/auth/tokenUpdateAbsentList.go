@@ -3,8 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
+	"himatro-api/internal/config"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -22,12 +21,12 @@ func CreateUpdateAbsentListToken(absentID int, NPM string) (string, error) {
 		NPM,
 		AbsentID,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Second * time.Duration(getIntegerEnvVar("UPDATE_ABSENT_LIST_TOKEN_EXP_SEC", 3600))).Unix(),
+			ExpiresAt: time.Now().Add(time.Second * time.Duration(config.UpdateAbsentListTokenExpSec())).Unix(),
 			Issuer:    NPM,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_SIGNING_KEY")))
+	signedToken, err := token.SignedString([]byte(config.JWTSigningKey()))
 
 	if err != nil {
 		return "", errors.New("server failed to create update token")
@@ -38,7 +37,7 @@ func CreateUpdateAbsentListToken(absentID int, NPM string) (string, error) {
 
 func ExtractJWTPayload(token string, claims *UpdateAbsentListClaims) error {
 	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET_SIGNING_KEY")), nil
+		return []byte(config.JWTSigningKey()), nil
 	})
 
 	if err != nil {
@@ -46,14 +45,4 @@ func ExtractJWTPayload(token string, claims *UpdateAbsentListClaims) error {
 	}
 
 	return nil
-}
-
-func getIntegerEnvVar(name string, defaultVal int) int {
-	envVal, err := strconv.Atoi(os.Getenv(name))
-
-	if err != nil {
-		return defaultVal
-	}
-
-	return envVal
 }

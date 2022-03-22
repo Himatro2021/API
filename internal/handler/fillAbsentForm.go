@@ -2,13 +2,12 @@ package handler
 
 import (
 	"fmt"
+	"himatro-api/internal/config"
 	"himatro-api/internal/controller"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 )
 
@@ -75,14 +74,10 @@ func FillAbsentForm(c echo.Context) error {
 		})
 	}
 
-	updateTokenExpiresSec, err := strconv.Atoi(os.Getenv("UPDATE_ABSENT_LIST_TOKEN_EXP_SEC"))
-
-	if err != nil {
-		updateTokenExpiresSec = 3600 // 1 hour expiry
-	}
+	updateTokenExpiresSec := config.UpdateAbsentListTokenExpSec()
 
 	cookie := new(http.Cookie)
-	cookie.Name = os.Getenv("UPDATE_ABSENT_LIST_COOKIE_NAME")
+	cookie.Name = config.UpdateAbsentListCookieName()
 	cookie.Value = updateToken
 	cookie.Expires = time.Now().Add(time.Second * time.Duration(updateTokenExpiresSec))
 
@@ -92,7 +87,7 @@ func FillAbsentForm(c echo.Context) error {
 }
 
 func UpdateAbsentListByAttendant(c echo.Context) error {
-	cookie, err := c.Cookie(os.Getenv("UPDATE_ABSENT_LIST_COOKIE_NAME"))
+	cookie, err := c.Cookie(config.UpdateAbsentListCookieName())
 
 	if err != nil {
 		return c.JSON(http.StatusForbidden, ErrorMessage{
