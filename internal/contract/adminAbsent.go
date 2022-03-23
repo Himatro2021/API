@@ -6,7 +6,7 @@ type CreateAbsentForm struct {
 	StartAtTime                 string `json:"startAtTime" validate:"required"`
 	FinishAtDate                string `json:"finishAtDate" validate:"required"`
 	FinishAtTime                string `json:"finishAtTime" validate:"required"`
-	RequireAttendanceImageProof bool   `json:"requireAttendanceImageProof" validate:"required,eq=true|eq=false"`
-	RequireExecuseImageProof    bool   `json:"requireExecuseImageProof" validate:"required,eq=true|eq=false"`
+	RequireAttendanceImageProof bool   `json:"requireAttendanceImageProof,omitempty"`
+	RequireExecuseImageProof    bool   `json:"requireExecuseImageProof,omitempty"`
 	Participant                 string `json:"participant" validate:"required"`
 }
