@@ -387,3 +387,4 @@ the result of testing against this API is located at: [here](https://docs.google
 2. Add length validator in field validation time (it always the same regardless the year)
 3. Add release on github
 4. Change logic on finishAt update to able to finish before now (but not before start)
+5. Add security feature to store sesion token and use extra data e.g ip and any other to make as unique as possible to one user only
