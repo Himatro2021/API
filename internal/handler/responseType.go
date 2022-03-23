@@ -16,6 +16,12 @@ type ErrorMessage struct {
 	Message string `json:"message"`
 }
 
+type JSONPayloadValidationError struct {
+	OK      bool     `json:"ok"`
+	Message string   `json:"message"`
+	Details []string `json:"details"`
+}
+
 type LoginTokenResp struct {
 	OK    bool   `json:"ok"`
 	Token string `json:"token"`
