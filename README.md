@@ -15,13 +15,15 @@ Steps:
 1. Clone or pull this repository
 2. Populate your .env file based on structure defined on .env.example<br>
 For example, copy all the content of .env.example, and paste it on a new .env file. Fill all the variable value with approprieate value.
-3. Create docker-compose.yml file. Copy content of docker-compose-local.yml, and paste it to docker-compose.yml. *note* you should change the value of the environment in postgres service. The value there should match with the value on your .env file, such as the value in .env, PGDATABASE should match with the environment value defined in POSTGRES_DB.
+3. Create docker-compose.yml file. Copy content of docker-compose-local.yml, and paste it to docker-compose.yml. Uncomment all the commented config in docker-compose-local.yml. *note* you should change the value of the environment in postgres service. The value there should match with the value on your .env file, such as the value in .env, PGDATABASE should match with the environment value defined in POSTGRES_DB.
 4. Run this command from the terminal on the root file of the source code -> `docker-compose up`. You should see the last output similar to this: <br>
 `postgres_1     | 2022-03-18 01:20:43.446 UTC [1] LOG:  database system is ready to accept connections`<br>
 `himatro-api_1  | 2022/03/18 08:20:44 Successfully connected to Postgres Server`<br>
 `himatro-api_1  | 2022/03/18 08:20:44 Server listening on port :8080`
-4. After that, run db migrator and db seeder. Before do this, make sure you already do the 4th prequisite step properly. First, run db migrator with command: `./cmd/migrate`. After that run: `./cmd/seeder`. This should run without any problem, otherwise will cause error on your API.
-5. Your API should be accessible from post 8080 in your machine.
+4. After that, you should know your container's id for Himatro API. Type `docker ps`
+5. Find Himatro Api container id, and execute `docker exec -it your_container_id /app/bin/main migrate` to run db migrator
+6. Execute `docker exec -it your_container_id /app/bin/main seeder` to run db seeder
+7. Your API should be accessible from post 8080 in your machine.
 
 
 ## Host
