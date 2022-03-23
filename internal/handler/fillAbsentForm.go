@@ -3,7 +3,9 @@ package handler
 import (
 	"fmt"
 	"himatro-api/internal/config"
+	"himatro-api/internal/contract"
 	"himatro-api/internal/controller"
+	"himatro-api/internal/util"
 	"net/http"
 	"strconv"
 	"time"
@@ -48,24 +50,24 @@ func FillAbsentForm(c echo.Context) error {
 		})
 	}
 
-	NPM := c.FormValue("NPM")
-	keterangan := c.FormValue("keterangan")
+	payload := contract.FillAbsentList{}
 
-	if NPM == "" || keterangan == "" {
+	if err := c.Bind(&payload); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
-			Message: "All required field must be supplied and using valid value.",
+			Message: "Invalid type of JSON Payload received",
 		})
 	}
 
-	if keterangan != "h" && keterangan != "i" {
-		return c.JSON(http.StatusBadRequest, ErrorMessage{
+	if err := util.Validator.Struct(&payload); err != nil {
+		return c.JSON(http.StatusBadRequest, JSONPayloadValidationError{
 			OK:      false,
-			Message: fmt.Sprintf("Value keterangan: %s is invalid.", keterangan),
+			Message: "JSON payload validation error",
+			Details: util.ExtractValidationErrorMsg(err),
 		})
 	}
 
-	updateToken, err := controller.FillAbsentForm(absentID, NPM, keterangan)
+	updateToken, err := controller.FillAbsentForm(absentID, payload.NPM, payload.Keterangan)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
@@ -96,7 +98,6 @@ func UpdateAbsentListByAttendant(c echo.Context) error {
 		})
 	}
 
-	keterangan := c.FormValue("keterangan")
 	absentID, err := strconv.Atoi(c.Param("absentID"))
 
 	if err != nil {
@@ -106,14 +107,24 @@ func UpdateAbsentListByAttendant(c echo.Context) error {
 		})
 	}
 
-	if keterangan == "" || (keterangan != "h" && keterangan != "i") {
+	payload := contract.UpdateKeteranganAbsent{}
+
+	if err := c.Bind(&payload); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
-			Message: "All required field must not empty and use only valid value.",
+			Message: "Invalid type of JSON Payload received",
 		})
 	}
 
-	if err := controller.UpdateAbsentListByAttendant(absentID, keterangan, cookie); err != nil {
+	if err := util.Validator.Struct(&payload); err != nil {
+		return c.JSON(http.StatusBadRequest, JSONPayloadValidationError{
+			OK:      false,
+			Message: "JSON payload validation error",
+			Details: util.ExtractValidationErrorMsg(err),
+		})
+	}
+
+	if err := controller.UpdateAbsentListByAttendant(absentID, payload.Keterangan, cookie); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
 			Message: fmt.Sprintf("Failed to update absent list because: %s", err.Error()),

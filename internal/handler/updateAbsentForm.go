@@ -68,7 +68,7 @@ func UpdateFormParticipant(c echo.Context) error {
 
 	payload := contract.UpdateFormParticipant{}
 
-	if err := c.Bind(payload); err != nil {
+	if err := c.Bind(&payload); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
 			OK:      false,
 			Message: "Invalid type of JSON Payload received",
