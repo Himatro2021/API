@@ -104,6 +104,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
         - type: string
         - required: true
         - allowed values: see [here](#defined-departement-name)
+        - case sensitive: no
   - Success Response Payload: <br>
     1. ok: boolean
     2. absentID: int
