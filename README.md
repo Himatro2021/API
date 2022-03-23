@@ -68,7 +68,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Create Absent Form <br>
   - Route: **/admin/absensi**
   - Method: **POST**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: **none**
   - URL query: **none**
   - Payload <br>
