@@ -94,12 +94,14 @@ if you just want to test the API, you can use the staging version hosted at: **h
         - format: `HH:MM:SS`
     6. requireAttendanceProof
         - type: boolean
-        - required: true
+        - required: false
         - allowed values: **"true"** or **"false"**
+        - default: false
     7. requireExecuseProof
         - type: boolean
-        - required: true
+        - required: false
         - allowed values: **"true"** or **"false"**
+        - default: false
     8. participant
         - type: string
         - required: true
