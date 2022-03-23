@@ -6,14 +6,13 @@ import (
 	"time"
 
 	"himatro-api/internal/config"
+	"himatro-api/internal/contract"
 	"himatro-api/internal/db"
 	"himatro-api/internal/models"
 	"himatro-api/internal/util"
-
-	"github.com/labstack/echo/v4"
 )
 
-type InitAbsentPayload struct {
+type InitAbsentData struct {
 	Title                       string    `json:"title" validate:"required"`
 	Participant                 int       `json:"participant" validate:"required"`
 	StartAt                     time.Time `json:"startAt" validate:"required"`
@@ -22,75 +21,50 @@ type InitAbsentPayload struct {
 	RequireExecuseImageProof    bool      `json:"requireExecuseImageProof" validate:"required"`
 }
 
-func ExtractInitAbsentPayload(c echo.Context) (InitAbsentPayload, error) {
-	initAbsentPayload := InitAbsentPayload{}
-
-	title := c.FormValue("title")
-	participant := c.FormValue("participant")
-	startAtDate := c.FormValue("startAtDate")
-	startAtTime := c.FormValue("startAtTime")
-	finishAtDate := c.FormValue("finishAtDate")
-	finishAtTime := c.FormValue("finishAtTime")
-	requireAttendanceImageProof := c.FormValue("requireAttendanceProof")
-	requireExecuseImageProof := c.FormValue("requireExecuseProof")
-
-	if title == "" || participant == "" ||
-		startAtDate == "" || startAtTime == "" ||
-		finishAtDate == "" || finishAtTime == "" {
-		return initAbsentPayload, errors.New("all required field must not empty")
-	}
-
-	if requireAttendanceImageProof == "true" {
-		initAbsentPayload.RequireAttendanceImageProof = true
-	} else {
-		initAbsentPayload.RequireAttendanceImageProof = false
-	}
-
-	if requireExecuseImageProof == "true" {
-		initAbsentPayload.RequireExecuseImageProof = true
-	} else {
-		initAbsentPayload.RequireExecuseImageProof = false
-	}
-
-	start, err := parseDate(startAtDate, startAtTime)
+func ExtractInitAbsentPayload(payload contract.CreateAbsentForm) (InitAbsentData, error) {
+	start, err := parseDate(payload.StartAtDate, payload.StartAtTime)
 
 	if err != nil {
-		return initAbsentPayload, errors.New("field start time and date is invalid")
+		return InitAbsentData{}, errors.New("field start time and date is invalid")
 	}
 
-	end, err := parseDate(finishAtDate, finishAtTime)
+	end, err := parseDate(payload.FinishAtDate, payload.FinishAtTime)
 
 	if err != nil {
-		return initAbsentPayload, errors.New("field finish time and date is invalid")
+		return InitAbsentData{}, errors.New("field finish time and date is invalid")
 	}
 
 	if start.After(end) {
-		return initAbsentPayload, errors.New("start date must happen before finish date")
+		return InitAbsentData{}, errors.New("start date must happen before finish date")
 	}
 
 	if time.Now().After(end) {
-		return initAbsentPayload, errors.New("absent form can't finish before current date")
+		return InitAbsentData{}, errors.New("absent form can't finish before current date")
 	}
 
 	if start.String() == end.String() {
-		return initAbsentPayload, errors.New("form absent cant't start and end in the same time")
+		return InitAbsentData{}, errors.New("form absent cant't start and end in the same time")
 	}
 
-	participantCode, err := validateParticipantCode(participant)
+	participantCode, err := validateParticipantCode(payload.Participant)
 
 	if err != nil {
-		return initAbsentPayload, err
+		return InitAbsentData{}, err
 	}
 
-	initAbsentPayload.Title = title
-	initAbsentPayload.Participant = participantCode
-	initAbsentPayload.StartAt = start
-	initAbsentPayload.FinishAt = end
+	initAbsentData := InitAbsentData{
+		Title:                       payload.Title,
+		Participant:                 participantCode,
+		StartAt:                     start,
+		FinishAt:                    end,
+		RequireAttendanceImageProof: payload.RequireAttendanceImageProof,
+		RequireExecuseImageProof:    payload.RequireExecuseImageProof,
+	}
 
-	return initAbsentPayload, nil
+	return initAbsentData, nil
 }
 
-func RegisterNewAbsentForm(detail *InitAbsentPayload) (uint, error) {
+func RegisterNewAbsentForm(detail *InitAbsentData) (uint, error) {
 	newAbsent := models.FormAbsensi{
 		Title:                       detail.Title,
 		Participant:                 detail.Participant,
@@ -109,7 +83,7 @@ func RegisterNewAbsentForm(detail *InitAbsentPayload) (uint, error) {
 	return newAbsent.ID, nil
 }
 
-func InitAbsentList(detail *InitAbsentPayload, absentID uint) error {
+func InitAbsentList(detail *InitAbsentData, absentID uint) error {
 	listPengurus, err := getAllNPMFromDepartemenID(detail.Participant)
 
 	if err != nil {
