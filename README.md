@@ -299,7 +299,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - ### Check Form Absent is Writeable
   - Route: **/absensi/:absentID**
   - Method: **GET**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -313,7 +313,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - ### Get Absent Form Result
   - Route: **/absensi/:absentID/result**
   - Method: **GET**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -331,7 +331,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - ### Fill Absent Form
   - Route: **/absensi/:absentID**
   - Method: **POST**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -352,7 +352,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - ### Update Absent List
   - Route: **/absensi/:absentID**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json*
   - URL params: <br>
     1. absentID
         - type: numeric string
