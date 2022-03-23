@@ -96,12 +96,10 @@ if you just want to test the API, you can use the staging version hosted at: **h
         - type: boolean
         - required: true
         - allowed values: **"true"** or **"false"**
-        - default value: **"false"**
     7. requireExecuseProof
         - type: boolean
         - required: true
         - allowed values: **"true"** or **"false"**
-        - default value: **"false"**
     8. participant
         - type: string
         - required: true
