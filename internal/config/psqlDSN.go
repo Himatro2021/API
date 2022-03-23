@@ -8,11 +8,11 @@ import (
 )
 
 func DBConnString() string {
-	host := os.Getenv("PGHOST")
-	db := os.Getenv("PGDATABASE")
-	user := os.Getenv("PGUSER")
-	pw := os.Getenv("PGPASSWORD")
-	port := os.Getenv("PGPORT")
+	host := os.Getenv("PG_HOST")
+	db := os.Getenv("PG_DATABASE")
+	user := os.Getenv("PG_USER")
+	pw := os.Getenv("PG_PASSWORD")
+	port := os.Getenv("PG_PORT")
 
 	if os.Getenv("ENV") != "local" {
 		host = "host.docker.internal"
