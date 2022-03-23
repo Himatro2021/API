@@ -10,3 +10,20 @@ type CreateAbsentForm struct {
 	RequireExecuseImageProof    bool   `json:"requireExecuseImageProof,omitempty"`
 	Participant                 string `json:"participant" validate:"required"`
 }
+
+type UpdateFormTitle struct {
+	Title string `json:"title" validate:"required"`
+}
+
+type UpdateFormParticipant struct {
+	Participant string `json:"participant" validate:"required"`
+}
+
+type UpdateFormImageProof struct {
+	Status bool `json:"status"`
+}
+
+type UpdateFormTime struct {
+	Date string `json:"date" validate:"required"`
+	Time string `json:"time" validate:"required"`
+}
