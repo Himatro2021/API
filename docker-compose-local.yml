@@ -11,7 +11,7 @@ services:
   #     - "8080:8080"
   postgres:
     image: postgres:14
-    environment:go run
+    environment:
       - POSTGRES_USER=lucky
       - POSTGRES_PASSWORD=lucky123
       - POSTGRES_DB=himatro
