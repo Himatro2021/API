@@ -40,7 +40,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Login as Admin <br>
   - Route: **/login**
   - Method: **POST**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: **none**
   - URL query: **none**
   - Payload <br>
@@ -124,7 +124,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Title from Absent Form
   - Route: **/admin/absensi/:absentID/title**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -174,18 +174,18 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Finish At from Absent Form
   - Route: **/admin/absensi/:absentID/finishAt**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
         - required: true
   - URL query: **none**
   - Payload <br>
-    1. finishAtDate
+    1. date
         - type: string
         - required: true
         - format: `YYYY-MM-DD`
-    2. finishAtTime
+    2. time
         - type: string
         - required: true
         - format: `HH:MM:SS`
@@ -200,18 +200,18 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Start At from Absent Form
   - Route: **/admin/absensi/:absentID/startAt**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
         - required: true
   - URL query: **none**
   - Payload <br>
-    1. startAtDate
+    1. date
         - type: string
         - required: true
         - format: `YYYY-MM-DD`
-    2. startAtTime
+    2. time
         - type: string
         - required: true
         - format: `HH:MM:SS`
@@ -226,7 +226,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Participant from Absent Form
   - Route: **/admin/absensi/:absentID/participant**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -249,7 +249,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Attendance Proof from Absent Form
   - Route: **/admin/absensi/:absentID/attendanceImageProof**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -257,9 +257,10 @@ if you just want to test the API, you can use the staging version hosted at: **h
   - URL query: **none**
   - Payload <br>
     1. status
-        - type: string
+        - type: boolean
         - required: true
         - allowed values: **"true"** or **""false""**
+        - default to: false
   - Success Response Payload: <br>
     1. ok: boolean
     2. message: string
@@ -271,7 +272,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Execuse Proof from Absent Form
   - Route: **/admin/absensi/:absentID/execuseImageProof**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -279,9 +280,10 @@ if you just want to test the API, you can use the staging version hosted at: **h
   - URL query: **none**
   - Payload <br>
     1. status
-        - type: string
+        - type: boolean
         - required: true
         - allowed values: **"true"** or **""false""**
+        - default to: false
   - Success Response Payload: <br>
     1. ok: boolean
     2. message: string
