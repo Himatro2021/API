@@ -48,7 +48,10 @@ func InitAbsent(c echo.Context) error {
 	err = controller.InitAbsentList(&initAbsentPayload, absentID)
 
 	if err != nil {
-		fmt.Println(err)
+		return c.JSON(http.StatusInternalServerError, ErrorMessage{
+			OK:      false,
+			Message: err.Error(),
+		})
 	}
 
 	return c.JSON(http.StatusOK, SuccessCreateAbsent{
