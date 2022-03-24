@@ -15,13 +15,15 @@ Steps:
 1. Clone or pull this repository
 2. Populate your .env file based on structure defined on .env.example<br>
 For example, copy all the content of .env.example, and paste it on a new .env file. Fill all the variable value with approprieate value.
-3. Create docker-compose.yml file. Copy content of docker-compose-local.yml, and paste it to docker-compose.yml. *note* you should change the value of the environment in postgres service. The value there should match with the value on your .env file, such as the value in .env, PGDATABASE should match with the environment value defined in POSTGRES_DB.
+3. Create docker-compose.yml file. Copy content of docker-compose-local.yml, and paste it to docker-compose.yml. Uncomment all the commented config in docker-compose-local.yml. *note* you should change the value of the environment in postgres service. The value there should match with the value on your .env file, such as the value in .env, PGDATABASE should match with the environment value defined in POSTGRES_DB.
 4. Run this command from the terminal on the root file of the source code -> `docker-compose up`. You should see the last output similar to this: <br>
 `postgres_1     | 2022-03-18 01:20:43.446 UTC [1] LOG:  database system is ready to accept connections`<br>
 `himatro-api_1  | 2022/03/18 08:20:44 Successfully connected to Postgres Server`<br>
 `himatro-api_1  | 2022/03/18 08:20:44 Server listening on port :8080`
-4. After that, run db migrator and db seeder. Before do this, make sure you already do the 4th prequisite step properly. First, run db migrator with command: `./cmd/migrate`. After that run: `./cmd/seeder`. This should run without any problem, otherwise will cause error on your API.
-5. Your API should be accessible from post 8080 in your machine.
+4. After that, you should know your container's id for Himatro API. Type `docker ps`
+5. Find Himatro Api container id, and execute `docker exec -it your_container_id /app/bin/main migrate` to run db migrator
+6. Execute `docker exec -it your_container_id /app/bin/main seeder` to run db seeder
+7. Your API should be accessible from post 8080 in your machine.
 
 
 ## Host
@@ -40,7 +42,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Login as Admin <br>
   - Route: **/login**
   - Method: **POST**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: **none**
   - URL query: **none**
   - Payload <br>
@@ -68,7 +70,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Create Absent Form <br>
   - Route: **/admin/absensi**
   - Method: **POST**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: **none**
   - URL query: **none**
   - Payload <br>
@@ -93,19 +95,20 @@ if you just want to test the API, you can use the staging version hosted at: **h
         - required: true,
         - format: `HH:MM:SS`
     6. requireAttendanceProof
-        - type: string
+        - type: boolean
         - required: false
         - allowed values: **"true"** or **"false"**
-        - default value: **"false"**
+        - default: false
     7. requireExecuseProof
-        - type: string
+        - type: boolean
         - required: false
         - allowed values: **"true"** or **"false"**
-        - default value: **"false"**
+        - default: false
     8. participant
         - type: string
         - required: true
         - allowed values: see [here](#defined-departement-name)
+        - case sensitive: no
   - Success Response Payload: <br>
     1. ok: boolean
     2. absentID: int
@@ -123,7 +126,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Title from Absent Form
   - Route: **/admin/absensi/:absentID/title**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -173,18 +176,18 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Finish At from Absent Form
   - Route: **/admin/absensi/:absentID/finishAt**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
         - required: true
   - URL query: **none**
   - Payload <br>
-    1. finishAtDate
+    1. date
         - type: string
         - required: true
         - format: `YYYY-MM-DD`
-    2. finishAtTime
+    2. time
         - type: string
         - required: true
         - format: `HH:MM:SS`
@@ -199,18 +202,18 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Start At from Absent Form
   - Route: **/admin/absensi/:absentID/startAt**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
         - required: true
   - URL query: **none**
   - Payload <br>
-    1. startAtDate
+    1. date
         - type: string
         - required: true
         - format: `YYYY-MM-DD`
-    2. startAtTime
+    2. time
         - type: string
         - required: true
         - format: `HH:MM:SS`
@@ -225,7 +228,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Participant from Absent Form
   - Route: **/admin/absensi/:absentID/participant**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -248,7 +251,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Attendance Proof from Absent Form
   - Route: **/admin/absensi/:absentID/attendanceImageProof**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -256,9 +259,10 @@ if you just want to test the API, you can use the staging version hosted at: **h
   - URL query: **none**
   - Payload <br>
     1. status
-        - type: string
+        - type: boolean
         - required: true
         - allowed values: **"true"** or **""false""**
+        - default to: false
   - Success Response Payload: <br>
     1. ok: boolean
     2. message: string
@@ -270,7 +274,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - #### Update Execuse Proof from Absent Form
   - Route: **/admin/absensi/:absentID/execuseImageProof**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -278,9 +282,10 @@ if you just want to test the API, you can use the staging version hosted at: **h
   - URL query: **none**
   - Payload <br>
     1. status
-        - type: string
+        - type: boolean
         - required: true
         - allowed values: **"true"** or **""false""**
+        - default to: false
   - Success Response Payload: <br>
     1. ok: boolean
     2. message: string
@@ -296,7 +301,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - ### Check Form Absent is Writeable
   - Route: **/absensi/:absentID**
   - Method: **GET**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -310,7 +315,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - ### Get Absent Form Result
   - Route: **/absensi/:absentID/result**
   - Method: **GET**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -328,7 +333,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - ### Fill Absent Form
   - Route: **/absensi/:absentID**
   - Method: **POST**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json**
   - URL params: <br>
     1. absentID
         - type: numeric string
@@ -349,7 +354,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
 - ### Update Absent List
   - Route: **/absensi/:absentID**
   - Method: **PATCH**
-  - Accepted Content Type / Payload: **form url encoded**
+  - Accepted Content Type / Payload: **application/json*
   - URL params: <br>
     1. absentID
         - type: numeric string

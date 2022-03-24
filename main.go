@@ -1,11 +1,11 @@
 package main
 
 import (
-	"himatro-api/server"
+	"himatro-api/internal/console"
 )
 
 func main() {
-	server.InitServer()
+	console.Execute()
 }
 
 // func main() {
