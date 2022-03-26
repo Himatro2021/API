@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"himatro-api/internal/db"
 	"himatro-api/internal/models"
-	"time"
 )
 
 func UpdateFormTitle(absentID int, title string) (string, error) {
@@ -102,10 +101,6 @@ func UpdateAbsentFormFinishAt(formID int, finishAtDate, finishAtTime string) (st
 
 	if newFinishAt.Before(formDetail.StartAt) {
 		return "", errors.New("form absent can't end before it's start date")
-	}
-
-	if newFinishAt.Before(time.Now()) {
-		return "", errors.New("form absent can't end before now")
 	}
 
 	if newFinishAt == formDetail.FinishAt {
