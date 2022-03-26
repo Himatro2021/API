@@ -375,6 +375,8 @@ if you just want to test the API, you can use the staging version hosted at: **h
 5. Departemen Sosial dan Kewirausahaan -> KWU
 6. Departemen Pengembangan Keteknikan -> BANGTEK
 
+extra: If you want to create absent form for all members, use ALL in the participant payload.
+
 ## Defined private data to initialize database
 
 There are several data required to run the server. Simply, you can look at .env.example content, and see the variable named like this: `ANGGOTA_BIASA_SEEDER_DATA_PATH`, or any variable ends with `SEEDER_DATA_PATH`. This file needs to be a csv file. <br>
@@ -391,3 +393,4 @@ the result of testing against this API is located at: [here](https://docs.google
 2. Add length validator in field validation time (it always the same regardless the year)
 3. Add release on github
 4. Add security feature to store sesion token and use extra data e.g ip and any other to make as unique as possible to one user only
+5. Update how to run section
