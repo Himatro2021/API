@@ -191,7 +191,7 @@ if you just want to test the API, you can use the staging version hosted at: **h
     3. fieldName: string
     4. value: string
   - Note:<br>
-    Server will do several validation to values given in the payload. Some are the value when converted to date, must not due before the form start time. Also, it can't end before now. You will receive **400 Bad Request** along with error message if the validation returns error.
+    Server will do several validation to values given in the payload. Some are the value when converted to date, must not due before the form start time. You will receive **400 Bad Request** along with error message if the validation returns error.
     <br><br>
 - #### Update Start At from Absent Form
   - Route: **/admin/absensi/:absentID/startAt**
@@ -390,5 +390,4 @@ the result of testing against this API is located at: [here](https://docs.google
 1. Add order_by query params in get absent forms details
 2. Add length validator in field validation time (it always the same regardless the year)
 3. Add release on github
-4. Change logic on finishAt update to able to finish before now (but not before start)
-5. Add security feature to store sesion token and use extra data e.g ip and any other to make as unique as possible to one user only
+4. Add security feature to store sesion token and use extra data e.g ip and any other to make as unique as possible to one user only
