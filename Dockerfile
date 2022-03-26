@@ -25,7 +25,6 @@ EXPOSE 8080
 
 WORKDIR /app
 
-COPY .env .
 RUN rm -r src/
 
 CMD ["./bin/main", "server"]
