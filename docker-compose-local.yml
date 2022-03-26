@@ -1,14 +1,17 @@
-version: '3'
+version: "3"
 
 services:
-  # himatro-api:
-  #   build: .
-  #   depends_on:
-  #     - postgres
-  #   extra_hosts:
-  #     - "host.docker.internal:host-gateway"
-  #   ports:
-  #     - "8080:8080"
+  himatro-api:
+    build: .
+    depends_on:
+      - postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./.env:/app/.env"
+
   postgres:
     image: postgres:14
     environment:
@@ -19,4 +22,3 @@ services:
       - /var/lib/postgresql/himatro_api_postgres_data:/var/lib/postgresql/data
     ports:
       - "54132:5432"
-    
