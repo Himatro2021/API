@@ -4,3 +4,5 @@ private_data/
 tmp/
 cmd.go
 docker-compose.yml
+request_himatro_api.log.json
+error.log
