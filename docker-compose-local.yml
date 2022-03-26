@@ -11,6 +11,8 @@ services:
   #     - "8080:8080"
   #   volumes:
   #     - "./.env:/app/.env"
+  #     - "/var/log/request_himatro_api.log.json:/app/request_himatro_api.log.json"
+  #     - "/var/log/error_himatro_api.log:/app/error.log"
 
   postgres:
     image: postgres:14
