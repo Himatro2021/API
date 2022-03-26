@@ -12,7 +12,7 @@ import (
 func Router() *echo.Echo {
 	e := echo.New()
 
-	e.Use(echoMiddleware.Logger())
+	e.Use(middleware.RequestLogger())
 	e.Use(echoMiddleware.CORS())
 
 	e.GET("/", handler.HomeGet)
