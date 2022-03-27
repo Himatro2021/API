@@ -1,6 +1,7 @@
 package console
 
 import (
+	"himatro-api/internal/util"
 	"log"
 	"os"
 
@@ -13,6 +14,7 @@ var RootCmd = &cobra.Command{
 
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
+		util.LogErr("ERROR", "command failed to execute", err.Error())
 		log.Panic(err.Error())
 
 		os.Exit(1)

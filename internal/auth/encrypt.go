@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"himatro-api/internal/config"
+	"himatro-api/internal/util"
 )
 
 var secret_key = config.SecretKey()
@@ -14,6 +15,7 @@ func Encrypt(plainText string) (string, error) {
 	block, err := aes.NewCipher([]byte(secret_key))
 
 	if err != nil {
+		util.LogErr("ERROR", "Encrypt failed to create new chiper", err.Error())
 		return "", err
 	}
 
