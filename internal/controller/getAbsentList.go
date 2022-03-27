@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"himatro-api/internal/db"
 	"himatro-api/internal/models"
+	"himatro-api/internal/util"
 )
 
 func GetAbsentFormsDetails(limit int) ([]models.ReturnedFormAbsentDetails, error) {
@@ -32,6 +33,7 @@ func GetAbsentFormsDetails(limit int) ([]models.ReturnedFormAbsentDetails, error
 		Scan(&absentFormsDetails)
 
 	if res.Error != nil {
+		util.LogErr("ERROR", "failed to query absent forms details", res.Error.Error())
 		return []models.ReturnedFormAbsentDetails{}, errors.New("failed to query absent forms details")
 	}
 
@@ -41,12 +43,14 @@ func GetAbsentFormsDetails(limit int) ([]models.ReturnedFormAbsentDetails, error
 
 func GetAbsentListResult(absentID int) ([]models.ReturnedAbsentList, error) {
 	if err := isFormAbsentExists(absentID); err != nil {
+		util.LogErr("WARN", fmt.Sprintf("Form absent not found ID: %d", absentID), err.Error())
 		return []models.ReturnedAbsentList{}, err
 	}
 
 	absentList, err := getAbsentListFromFormID(absentID)
 
 	if err != nil {
+		util.LogErr("ERROR", fmt.Sprintf("failed to get absent result list ID: %d", absentID), err.Error())
 		return []models.ReturnedAbsentList{}, err
 	}
 
@@ -61,6 +65,7 @@ func isFormAbsentExists(absentID int) error {
 		First(&formAbsent)
 
 	if res.Error != nil {
+		util.LogErr("WARN", fmt.Sprintf("absent form with ID: %d is not exists", absentID), res.Error.Error())
 		return fmt.Errorf("absent form with ID: %d is not exists", absentID)
 	}
 
@@ -73,6 +78,7 @@ func getAbsentListFromFormID(absentID int) ([]models.ReturnedAbsentList, error) 
 	res := db.DB.Model(&models.AbsentList{}).Select("anggota_biasas.nama, absent_lists.npm, absent_lists.updated_at, absent_lists.keterangan, departemens.nama as nama_departemen").Where(&models.AbsentList{FormAbsensiID: uint(absentID)}).Joins("inner join anggota_biasas on anggota_biasas.npm = absent_lists.npm").Joins("inner join pengurus on pengurus.npm = anggota_biasas.npm").Joins("inner join departemens on departemens.id = pengurus.departemen_id").Find(&absentLists)
 
 	if res.Error != nil {
+		util.LogErr("ERROR", fmt.Sprintf("server failed to fetch requested absent list ID: %d", absentID), res.Error.Error())
 		return absentLists, errors.New("server failed to fetch requested absent list")
 	}
 

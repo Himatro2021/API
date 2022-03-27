@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"himatro-api/internal/db"
 	"himatro-api/internal/router"
+	"himatro-api/internal/util"
 	"log"
 	"net/http"
 	"os"
@@ -36,6 +37,7 @@ func InitServer(cmd *cobra.Command, args []string) {
 	err := s.ListenAndServe()
 
 	if err != nil {
+		util.LogErr("ERROR", "SERVER failed to start", err.Error())
 		log.Fatal("Server failed to starts.", err)
 	}
 }

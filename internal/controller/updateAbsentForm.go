@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"himatro-api/internal/db"
 	"himatro-api/internal/models"
+	"himatro-api/internal/util"
 )
 
 func UpdateFormTitle(absentID int, title string) (string, error) {
@@ -13,6 +14,7 @@ func UpdateFormTitle(absentID int, title string) (string, error) {
 	}
 
 	if err := updateAbsentFormDetail(newAbsentForm, absentID); err != nil {
+		util.LogErr("ERROR", "failed to update absent form title", err.Error())
 		return "", err
 	}
 
@@ -23,12 +25,14 @@ func UpdateParticipant(formID int, newParticipant string) error {
 	formDetail, err := getFormDetail(formID)
 
 	if err != nil {
+		util.LogErr("ERROR", "failed to get form detail", err.Error())
 		return err
 	}
 
 	participantCode, err := validateParticipantCode(newParticipant)
 
 	if err != nil {
+		util.LogErr("WARN", fmt.Sprintf("participant with code: %s is invalid", newParticipant), err.Error())
 		return fmt.Errorf("participant with code: %s is invalid", newParticipant)
 	}
 
@@ -37,6 +41,7 @@ func UpdateParticipant(formID int, newParticipant string) error {
 	}
 
 	if err := isParticipantChangeable(formID); err != nil {
+		util.LogErr("WARN", fmt.Sprintf("participant on absentID: %d is not changeable", formID), err.Error())
 		return err
 	}
 
@@ -44,6 +49,7 @@ func UpdateParticipant(formID int, newParticipant string) error {
 	deleteOldAbsentList(formID)
 
 	if err := createNewAbsentList(formID, participantCode); err != nil {
+		util.LogErr("ERROR", "Failed to generate new absent list", err.Error())
 		return err
 	}
 
@@ -54,16 +60,19 @@ func UpdateAbsentFormStartAt(formID int, startAtDate, startAtTime string) (strin
 	newStartAt, err := parseDate(startAtDate, startAtTime)
 
 	if err != nil {
+		util.LogErr("WARN", "invalid date time string received", err.Error())
 		return "", fmt.Errorf("invalid date time string received")
 	}
 
 	formDetail, err := getFormDetail(formID)
 
 	if err != nil {
+		util.LogErr("WARN", "Failed to get form detail", err.Error())
 		return "", err
 	}
 
 	if newStartAt.After(formDetail.FinishAt) {
+		util.LogErr("WARN", "Failed to create new form absent can't start after it's end date", "")
 		return "", errors.New("form absent can't start after it's end date")
 	}
 
@@ -72,6 +81,7 @@ func UpdateAbsentFormStartAt(formID int, startAtDate, startAtTime string) (strin
 	}
 
 	if newStartAt.String() == formDetail.FinishAt.String() {
+		util.LogErr("WARN", "form absent cant't start and end in the same time", "")
 		return "", errors.New("form absent cant't start and end in the same time")
 	}
 
@@ -80,6 +90,7 @@ func UpdateAbsentFormStartAt(formID int, startAtDate, startAtTime string) (strin
 	}
 
 	if err := updateAbsentFormDetail(newAbsentForm, formID); err != nil {
+		util.LogErr("ERROR", "Failed to update form start at", err.Error())
 		return "", errors.New("server failure to update form details")
 	}
 
@@ -90,16 +101,19 @@ func UpdateAbsentFormFinishAt(formID int, finishAtDate, finishAtTime string) (st
 	newFinishAt, err := parseDate(finishAtDate, finishAtTime)
 
 	if err != nil {
+		util.LogErr("WARN", "invalid date time string received", err.Error())
 		return "", fmt.Errorf("invalid date time string received")
 	}
 
 	formDetail, err := getFormDetail(formID)
 
 	if err != nil {
+		util.LogErr("WARN", "Failed to get form detail", err.Error())
 		return "", err
 	}
 
 	if newFinishAt.Before(formDetail.StartAt) {
+		util.LogErr("WARN", "form absent can't end before it's start date", "")
 		return "", errors.New("form absent can't end before it's start date")
 	}
 
@@ -108,6 +122,7 @@ func UpdateAbsentFormFinishAt(formID int, finishAtDate, finishAtTime string) (st
 	}
 
 	if newFinishAt.String() == formDetail.StartAt.String() {
+		util.LogErr("WARN", "form absent cant't start and end in the same time", "")
 		return "", errors.New("form absent cant't start and end in the same time")
 	}
 
@@ -116,6 +131,7 @@ func UpdateAbsentFormFinishAt(formID int, finishAtDate, finishAtTime string) (st
 	}
 
 	if err := updateAbsentFormDetail(newAbsentForm, formID); err != nil {
+		util.LogErr("ERROR", "Failed to update form start at", err.Error())
 		return "", errors.New("server failure to update form details")
 	}
 
@@ -128,6 +144,7 @@ func UpdateAbsentFormExecuseImageProof(formID int, proof bool) error {
 	err := db.DB.Model(&absentForm).Where("id = ?", formID).First(&absentForm)
 
 	if err.Error != nil {
+		util.LogErr("WARN", fmt.Sprintf("form with ID: %d is not exists", formID), err.Error.Error())
 		return fmt.Errorf("form with ID: %d is not exists", formID)
 	}
 
@@ -144,6 +161,7 @@ func UpdateAbsentFormAttendanceImageProof(formID int, proof bool) error {
 	err := db.DB.Model(&absentForm).Where("id = ?", formID).First(&absentForm)
 
 	if err.Error != nil {
+		util.LogErr("WARN", fmt.Sprintf("form with ID: %d is not exists", formID), err.Error.Error())
 		return fmt.Errorf("form with ID: %d is not exists", formID)
 	}
 
@@ -158,6 +176,7 @@ func updateAbsentFormDetail(absentForm models.FormAbsensi, absentID int) error {
 	res := db.DB.Model(&models.FormAbsensi{}).Where("id = ?", absentID).Updates(&absentForm)
 
 	if res.RowsAffected == 0 {
+		util.LogErr("WARN", fmt.Sprintf("absent form for ID: %d is not found", absentID), res.Error.Error())
 		return fmt.Errorf("absent form for ID: %d is not found", absentID)
 	}
 
@@ -178,6 +197,7 @@ func createNewAbsentList(formID int, participantCode int) error {
 	NPMs, err := getAllNPMFromDepartemenID(participantCode)
 
 	if err != nil {
+		util.LogErr("ERROR", "absent list creation failed", err.Error())
 		return errors.New("absent list creation failed")
 	}
 
@@ -194,6 +214,7 @@ func getFormDetail(formID int) (models.FormAbsensi, error) {
 	res := db.DB.Model(formAbsent).Where("id = ?", formID).Find(&formAbsent)
 
 	if res.RowsAffected == 0 {
+		util.LogErr("WARN", fmt.Sprintf("absent form for ID: %d is not found", formID), res.Error.Error())
 		return formAbsent, fmt.Errorf("form with ID: %d is not found", formID)
 	}
 
@@ -219,11 +240,13 @@ func isParticipantChangeable(absentID int) error {
 		}).Find(&absentLists)
 
 	if res.Error != nil {
+		util.LogErr("ERROR", "failed to change participant of an absent form", res.Error.Error())
 		return errors.New("failed to change participant of an absent form")
 	}
 
 	for _, absentList := range absentLists {
 		if absentList.Keterangan != "?" {
+			util.LogErr("ERROR", fmt.Sprintf("participant of absent form with ID: %d can't be changed because some participants are already fill it", absentID), "")
 			return fmt.Errorf("participant of absent form with ID: %d can't be changed because some participants are already fill it", absentID)
 		}
 	}

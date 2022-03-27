@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -25,30 +26,36 @@ func ExtractInitAbsentPayload(payload contract.CreateAbsentForm) (InitAbsentData
 	start, err := parseDate(payload.StartAtDate, payload.StartAtTime)
 
 	if err != nil {
+		util.LogErr("WARN", "field start time and date is invalid", err.Error())
 		return InitAbsentData{}, errors.New("field start time and date is invalid")
 	}
 
 	end, err := parseDate(payload.FinishAtDate, payload.FinishAtTime)
 
 	if err != nil {
+		util.LogErr("WARN", "field finish time and date is invalid", err.Error())
 		return InitAbsentData{}, errors.New("field finish time and date is invalid")
 	}
 
 	if start.After(end) {
+		util.LogErr("WARN", "start date must happen before finish date", err.Error())
 		return InitAbsentData{}, errors.New("start date must happen before finish date")
 	}
 
 	if time.Now().After(end) {
+		util.LogErr("WARN", "absent form can't finish before current date", err.Error())
 		return InitAbsentData{}, errors.New("absent form can't finish before current date")
 	}
 
 	if start.String() == end.String() {
+		util.LogErr("WARN", "form absent cant't start and end in the same time", err.Error())
 		return InitAbsentData{}, errors.New("form absent cant't start and end in the same time")
 	}
 
 	participantCode, err := validateParticipantCode(payload.Participant)
 
 	if err != nil {
+		util.LogErr("WARN", fmt.Sprintf("Invalid participant code used: %s", payload.Participant), err.Error())
 		return InitAbsentData{}, err
 	}
 
@@ -77,6 +84,7 @@ func RegisterNewAbsentForm(detail *InitAbsentData) (uint, error) {
 	err := db.DB.Create(&newAbsent)
 
 	if err.Error != nil {
+		util.LogErr("ERROR", fmt.Sprintf("system failed to register new absent for %s", newAbsent.Title), err.Error.Error())
 		return 0, errors.New("system failed to register new absent")
 	}
 
@@ -87,6 +95,7 @@ func InitAbsentList(detail *InitAbsentData, absentID uint) error {
 	listPengurus, err := getAllNPMFromDepartemenID(detail.Participant)
 
 	if err != nil {
+		util.LogErr("ERROR", fmt.Sprintf("failed to generate absent lists for: %d", absentID), err.Error())
 		return errors.New("failed to generate absent lists")
 	}
 
@@ -95,6 +104,7 @@ func InitAbsentList(detail *InitAbsentData, absentID uint) error {
 	errs := db.DB.Create(&absentLists)
 
 	if errs.Error != nil {
+		util.LogErr("ERROR", fmt.Sprintf("failed to generate absent lists for: %d", absentID), err.Error())
 		return errors.New("failed to generate absent lists")
 	}
 
@@ -105,12 +115,14 @@ func parseDate(startAtDate string, startAtTime string) (time.Time, error) {
 	year, month, day, err := util.ExtractDateString(startAtDate)
 
 	if err != nil {
+		util.LogErr("WARN", fmt.Sprintf("invalid start date string received: %s", startAtDate), err.Error())
 		return time.Now(), err
 	}
 
 	hour, minute, sec, err := util.ExtractTimeString(startAtTime)
 
 	if err != nil {
+		util.LogErr("WARN", fmt.Sprintf("invalid start time string received: %s", startAtTime), err.Error())
 		return time.Now(), err
 	}
 
@@ -138,6 +150,7 @@ func validateParticipantCode(participant string) (int, error) {
 	case "ALL":
 		return 0, nil // create absent for all
 	default:
+		util.LogErr("WARN", fmt.Sprintf("participant (departemenID) is invalid: %s", participant), "")
 		return 0, errors.New("participant (departemenID) is invalid")
 	}
 }
@@ -148,6 +161,7 @@ func getAllNPMFromDepartemenID(departemenID int) ([]models.Pengurus, error) {
 	err := db.DB.Where(&models.Pengurus{DepartemenID: departemenID}).Find(&pengurus) // if departemenID 0, query all see: https://gorm.io/docs/query.html#Struct-amp-Map-Conditions
 
 	if err.Error != nil {
+		util.LogErr("ERROR", fmt.Sprintf("failed to instaniate new absent list departemenID: %d", departemenID), err.Error.Error())
 		return pengurus, errors.New("failed to instaniate new absent list")
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"himatro-api/internal/db"
 	"himatro-api/internal/models"
+	"himatro-api/internal/util"
 	"log"
 	"os"
 	"strconv"
@@ -51,6 +52,7 @@ func seedAnggotaBiasa() {
 		result := db.DB.Create(&anggotaBiasa)
 
 		if result.Error != nil {
+			util.LogErr("WARN", fmt.Sprintf("Failed to insert data for %q", anggotaBiasa), result.Error.Error())
 			log.Printf("Failed to insert data for %q because: %s", anggotaBiasa, result.Error)
 		}
 	}
@@ -66,6 +68,7 @@ func seedDepartemen() {
 		id, err := strconv.ParseInt(data[i][0], 10, 8)
 
 		if err != nil {
+			util.LogErr("ERROR", "Invalid value in departemenID from corespondense CSV file.", err.Error())
 			panic("Invalid value in departemenID from corespondense CSV file.")
 		}
 
@@ -79,6 +82,7 @@ func seedDepartemen() {
 		result := db.DB.Create(&departemen)
 
 		if result.Error != nil {
+			util.LogErr("ERROR", fmt.Sprintf("Failed to insert data for %q", departemen), result.Error.Error())
 			log.Printf("Failed to insert data for %q because: %s", departemen, result.Error)
 		}
 	}
@@ -94,12 +98,14 @@ func seedPengurus() {
 		departemenID, err := strconv.Atoi(data[i][1])
 
 		if err != nil {
+			util.LogErr("ERROR", "Invalid departemenID data in pengurus.csv file.", err.Error())
 			panic("Invalid departemenID data in pengurus.csv file.")
 		}
 
 		jabatanID, err := strconv.Atoi(data[i][2])
 
 		if err != nil {
+			util.LogErr("ERROR", "Invalid jabatanID data in pengurus.csv file.", err.Error())
 			panic("Invalid jabatanID data in pengurus.csv file.")
 		}
 
@@ -114,6 +120,7 @@ func seedPengurus() {
 		result := db.DB.Create(&pengurus)
 
 		if result.Error != nil {
+			util.LogErr("ERROR", fmt.Sprintf("Failed to insert data Pengurus for %s", pengurus.NPM), result.Error.Error())
 			log.Printf("Failed to insert data Pengurus for %s because %s", pengurus.NPM, result.Error)
 		}
 	}
@@ -129,12 +136,14 @@ func seedJabatan() {
 		id, err := strconv.ParseInt(data[i][0], 10, 8)
 
 		if err != nil {
+			util.LogErr("ERROR", "Invalid type on JabatanID field from corespondense CSV file", err.Error())
 			panic("Invalid type on JabatanID field from corespondense CSV file")
 		}
 
 		privLevel, err := strconv.ParseInt(data[i][1], 10, 8)
 
 		if err != nil {
+			util.LogErr("ERROR", "Invalid type on privilegeLevel field from corespondense CSV file", err.Error())
 			panic("Invalid type on privilegeLevel field from corespondense CSV file")
 		}
 
@@ -147,6 +156,7 @@ func seedJabatan() {
 		result := db.DB.Create(&jabatan)
 
 		if result.Error != nil {
+			util.LogErr("ERROR", fmt.Sprintf("Failed to insert data Jabatan for %s", jabatan.Name), result.Error.Error())
 			log.Printf("Failed to insert data Jabatan for %s", jabatan.Name)
 		}
 	}
@@ -167,6 +177,7 @@ func seedSuperAdminUser() {
 		result := db.DB.Create(&superAdmin)
 
 		if result.Error != nil {
+			util.LogErr("ERROR", fmt.Sprintf("User admin failed to insert in: %s", superAdmin.NPM), result.Error.Error())
 			log.Printf("User admin failed to insert in: %s", superAdmin.NPM)
 		}
 	}
@@ -176,6 +187,7 @@ func readFromCSV(filepath string) [][]string {
 	file, err := os.Open(filepath)
 
 	if err != nil {
+		util.LogErr("ERROR", "Failed to open CSV seeder file", err.Error())
 		log.Fatal("Failed to open CSV seeder file: ", filepath)
 	}
 
@@ -186,6 +198,7 @@ func readFromCSV(filepath string) [][]string {
 	data, err := csvData.ReadAll()
 
 	if err != nil {
+		util.LogErr("ERROR", "error accoured when reading CSV seeder file", err.Error())
 		log.Fatal("error accoured when reading CSV seeder file: ", filepath)
 	}
 
@@ -196,11 +209,13 @@ func validateCSVColumnHeader(firstRow []string, configName string) {
 	config := strings.Split(os.Getenv(configName), ",")
 
 	if len(config) != len(firstRow) {
+		util.LogErr("ERROR", fmt.Sprintf("Format mismatch in %s with the input CS file. Please read the seeder instruction carefully", configName), "")
 		log.Fatal(fmt.Sprintf("Format mismatch in %s with the input CS file. Please read the seeder instruction carefully.", configName))
 	}
 
 	for i, s := range config {
 		if s != firstRow[i] {
+			util.LogErr("ERROR", fmt.Sprintf("CSV header format mismatch: %s with %s while checking validity in: %s", s, firstRow[i], configName), "")
 			log.Fatal(fmt.Sprintf("CSV header format mismatch: %s with %s while checking validity in: %s", s, firstRow[i], configName))
 		}
 	}

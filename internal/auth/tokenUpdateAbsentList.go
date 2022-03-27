@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"himatro-api/internal/config"
+	"himatro-api/internal/util"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -29,6 +30,7 @@ func CreateUpdateAbsentListToken(absentID int, NPM string) (string, error) {
 	signedToken, err := token.SignedString([]byte(config.JWTSigningKey()))
 
 	if err != nil {
+		util.LogErr("ERROR", "Server failed to create signed token string", err.Error())
 		return "", errors.New("server failed to create update token")
 	}
 
@@ -41,6 +43,7 @@ func ExtractJWTPayload(token string, claims *UpdateAbsentListClaims) error {
 	})
 
 	if err != nil {
+		util.LogErr("INFO", fmt.Sprintf("Invalid token used: %s", token), err.Error())
 		return fmt.Errorf("invalid token: %s", err.Error())
 	}
 

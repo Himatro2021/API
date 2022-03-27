@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"himatro-api/internal/auth"
+	"himatro-api/internal/util"
 	"log"
 	"os"
 
@@ -30,6 +31,7 @@ func encryptor(cmd *cobra.Command, args []string) {
 	text, err := reader.ReadString(byte('\n'))
 
 	if err != nil {
+		util.LogErr("ERROR", "command encryptor is fail", err.Error())
 		fmt.Println("command failed")
 		log.Panic(err.Error())
 	}
@@ -37,6 +39,7 @@ func encryptor(cmd *cobra.Command, args []string) {
 	encrypted, err := auth.Encrypt(text)
 
 	if err != nil {
+		util.LogErr("ERROR", "command encryptor is fail", err.Error())
 		fmt.Println("command failed")
 		log.Panic(err.Error())
 	}

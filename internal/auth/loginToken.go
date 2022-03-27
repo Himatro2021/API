@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"himatro-api/internal/config"
+	"himatro-api/internal/util"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -19,6 +20,7 @@ func CreateLoginToken(NPM string) (string, error) {
 	signedToken, err := token.SignedString([]byte(config.JWTSigningKey()))
 
 	if err != nil {
+		util.LogErr("ERROR", "Server failed to sign the token string", err.Error())
 		return "", errors.New("server failed to create login token")
 	}
 
