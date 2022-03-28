@@ -395,3 +395,4 @@ the result of testing against this API is located at: [here](https://docs.google
 4. Add security feature to store sesion token and use extra data e.g ip and any other to make as unique as possible to one user only
 5. Update how to run section
 6. Implement logger
+7. Create volumes to private_data in docker-compose
