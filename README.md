@@ -396,3 +396,4 @@ the result of testing against this API is located at: [here](https://docs.google
 5. Update how to run section
 6. Implement logger
 7. Create volumes to private_data in docker-compose
+8. Add izin / hadir / tanpa keterangan count in absent result
