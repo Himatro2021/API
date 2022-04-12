@@ -13,6 +13,7 @@ services:
   #     - "./.env:/app/.env"
   #     - "/var/log/request_himatro_api.log.json:/app/request_himatro_api.log.json"
   #     - "/var/log/error_himatro_api.log:/app/error.log"
+  #     - "./private_data/:/app/private_data"
 
   postgres:
     image: postgres:14

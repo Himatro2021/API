@@ -17,10 +17,6 @@ WORKDIR /app/src
 COPY . .
 RUN go build -o /app/bin/main main.go
 
-WORKDIR /app/private_data
-
-COPY private_data/ .
-
 EXPOSE 8080
 
 WORKDIR /app
