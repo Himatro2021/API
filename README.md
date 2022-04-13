@@ -322,7 +322,10 @@ if you just want to test the API, you can use the staging version hosted at: **h
     1. ok: boolean
     2. formID: int
     3. total: int
-    4. list: array -> npm, updatedAt, keterangan, nama, departemen (all string)
+    4. total_hadir: int
+    5. total_izin: int
+    6. total_tanpa_keterangan: int
+    7. list: array -> npm, updatedAt, keterangan, nama, departemen (all string)
   - Note:<br>
     This endpoint will give you absent result no matter if the form it self is already closed or not even open yet. The field total in the response payload represent how many participants are in the list. If you're trying to request inexisting / request with invalid _absentID_, server will response with **400 Bad Request** alongside with error message.
 
