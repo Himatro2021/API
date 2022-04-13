@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"himatro-api/internal/controller"
+	"himatro-api/internal/util"
 	"net/http"
 	"strconv"
 
@@ -20,6 +21,7 @@ func GetAbsentResult(c echo.Context) error {
 	}
 
 	absentList, err := controller.GetAbsentListResult(absentID)
+	hadir, izin, alpha := util.CountKeteranganResult(absentList)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorMessage{
@@ -29,10 +31,13 @@ func GetAbsentResult(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, SuccessListAbsent{
-		OK:     true,
-		FormID: absentID,
-		Total:  len(absentList),
-		List:   absentList,
+		OK:         true,
+		FormID:     absentID,
+		Total:      len(absentList),
+		TotalHadir: hadir,
+		TotalIzin:  izin,
+		TotalAlpha: alpha,
+		List:       absentList,
 	})
 }
 
