@@ -39,10 +39,13 @@ type SuccessCreateAbsent struct {
 }
 
 type SuccessListAbsent struct {
-	OK     bool                        `json:"ok"`
-	FormID int                         `json:"formID"`
-	Total  int                         `json:"total"`
-	List   []models.ReturnedAbsentList `json:"list"`
+	OK         bool                        `json:"ok"`
+	FormID     int                         `json:"formID"`
+	Total      int                         `json:"total"`
+	TotalHadir int                         `json:"total_hadir"`
+	TotalIzin  int                         `json:"total_izin"`
+	TotalAlpha int                         `json:"total_tanpa_keterangan"`
+	List       []models.ReturnedAbsentList `json:"list"`
 }
 
 type SuccessUpdateForm struct {
