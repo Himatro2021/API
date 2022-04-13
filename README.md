@@ -393,5 +393,4 @@ the result of testing against this API is located at: [here](https://docs.google
 2. Add length validator in field validation time (it always the same regardless the year)
 3. Add security feature to store sesion token and use extra data e.g ip and any other to make as unique as possible to one user only
 4. Update how to run section
-5. Create volumes to private_data in docker-compose
-6. Add izin / hadir / tanpa keterangan count in absent result
+5. Add izin / hadir / tanpa keterangan count in absent result
