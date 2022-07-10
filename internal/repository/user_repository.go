@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/model"
 	"github.com/kumparan/go-utils"
 	"github.com/sirupsen/logrus"
@@ -28,14 +30,19 @@ func (r *userRepository) CreateInvitation(ctx context.Context, name, email strin
 		"email": email,
 	})
 
+	invCode, err := helper.HashString(strconv.FormatInt(utils.GenerateID(), 10))
+	if err != nil {
+		return nil, err
+	}
+
 	invitation := &model.UserInvitation{
 		ID:             utils.GenerateID(),
 		Email:          email,
-		InvitationCode: "123",
 		Name:           name,
+		InvitationCode: invCode,
 	}
 
-	err := r.db.WithContext(ctx).Create(invitation).Error
+	err = r.db.WithContext(ctx).Create(invitation).Error
 	if err != nil {
 		logger.Error(err)
 		return nil, err
