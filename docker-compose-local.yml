@@ -1,14 +1,14 @@
 version: "3"
 
 services:
-  # himatro-api:
+  # http:
   #   build: .
   #   depends_on:
   #     - postgres
   #   extra_hosts:
   #     - "host.docker.internal:host-gateway"
   #   ports:
-  #     - "8080:8080"
+  #     - "${SERVER_PORT}:8080"
   #   volumes:
   #     - "./.env:/app/.env"
   #     - "/var/log/request_himatro_api.log.json:/app/request_himatro_api.log.json"
@@ -17,10 +17,10 @@ services:
   postgres:
     image: postgres:14
     environment:
-      - POSTGRES_USER=lucky
-      - POSTGRES_PASSWORD=lucky123
-      - POSTGRES_DB=himatro
+      - POSTGRES_USER="${PG_USER}"
+      - POSTGRES_PASSWORD="${PG_PASSWORD}"
+      - POSTGRES_DB="${PG_DATABASE}"
     volumes:
       - /var/lib/postgresql/himatro_api_postgres_data:/var/lib/postgresql/data
     ports:
-      - "54132:5432"
+      - "${PG_PORT}:5432"
