@@ -10,6 +10,7 @@ type UserInvitationInput struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
+// Validate validate struct
 func (usi *UserInvitationInput) Validate() error {
 	if err := Validator.Struct(usi); err != nil {
 		return err
@@ -26,6 +27,7 @@ type UserInvitation struct {
 	InvitationCode string `json:"invitation_code"`
 }
 
+// User :nodoc:
 type User struct {
 }
 

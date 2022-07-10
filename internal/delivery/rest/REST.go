@@ -5,13 +5,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type RESTService struct {
+// Service :nodoc:
+type Service struct {
 	group       *echo.Group
 	userUsecase model.UserUsecase
 }
 
-func InitRESTService(group *echo.Group, userUsecase model.UserUsecase) {
-	service := RESTService{
+// InitService self explained
+func InitService(group *echo.Group, userUsecase model.UserUsecase) {
+	service := Service{
 		group:       group,
 		userUsecase: userUsecase,
 	}
@@ -19,6 +21,6 @@ func InitRESTService(group *echo.Group, userUsecase model.UserUsecase) {
 	service.initRoutes()
 }
 
-func (s *RESTService) initRoutes() {
+func (s *Service) initRoutes() {
 	s.group.POST("/members/invitations", s.handleCreateMemberInvitation())
 }

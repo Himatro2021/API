@@ -6,6 +6,7 @@ import (
 	"github.com/Himatro2021/API/internal/config"
 	"github.com/Himatro2021/API/internal/db"
 	"github.com/Himatro2021/API/internal/delivery/rest"
+	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/repository"
 	"github.com/Himatro2021/API/internal/usecase"
 	"github.com/labstack/echo/v4"
@@ -33,7 +34,7 @@ func InitServer(cmd *cobra.Command, args []string) {
 		logrus.Fatal("unable to start server. reason: ", err.Error())
 	}
 
-	defer sqlDB.Close()
+	defer helper.WrapCloser(sqlDB.Close)
 
 	userRepo := repository.NewUserRepository(db.PostgresDB)
 	userUsecase := usecase.NewUserUsecase(userRepo)
@@ -41,7 +42,7 @@ func InitServer(cmd *cobra.Command, args []string) {
 	HTTPServer := echo.New()
 	RESTGroup := HTTPServer.Group("rest")
 
-	rest.InitRESTService(RESTGroup, userUsecase)
+	rest.InitService(RESTGroup, userUsecase)
 
 	if err := HTTPServer.Start(fmt.Sprintf(":%s", config.ServerPort())); err != nil {
 		logrus.Fatal("unable to start server. reason: ", err.Error())

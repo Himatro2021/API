@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (s *RESTService) handleCreateMemberInvitation() echo.HandlerFunc {
+func (s *Service) handleCreateMemberInvitation() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		request := model.UserInvitationInput{}
 
