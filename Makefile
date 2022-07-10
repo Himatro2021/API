@@ -43,14 +43,14 @@ test-only: check-gotest mockgen
 test: lint test-only
 
 check-gotest:
-	ifeq (, $(shell which richgo))
-		$(warning "richgo is not installed, falling back to plain go test")
-		$(eval TEST_BIN=go test)
-	else
-		$(eval TEST_BIN=richgo test)
-	endif
+ifeq (, $(shell which richgo))
+	$(warning "richgo is not installed, falling back to plain go test")
+	$(eval TEST_BIN=go test)
+else
+	$(eval TEST_BIN=richgo test)
+endif
 
-	ifdef test_run
-		$(eval TEST_ARGS := -run $(test_run))
-	endif
-		$(eval test_command=$(TEST_BIN) ./... $(TEST_ARGS) -v --cover)
+ifdef test_run
+	$(eval TEST_ARGS := -run $(test_run))
+endif
+	$(eval test_command=$(TEST_BIN) ./... $(TEST_ARGS) -v --cover)
