@@ -13,12 +13,14 @@ type userRepository struct {
 	db *gorm.DB
 }
 
+// NewUserRepository initialize user repository
 func NewUserRepository(db *gorm.DB) model.UserRepository {
 	return &userRepository{
 		db: db,
 	}
 }
 
+// CreateInvitation create invitation for member
 func (r *userRepository) CreateInvitation(ctx context.Context, name, email string) (*model.UserInvitation, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"ctx":   utils.DumpIncomingContext(ctx),
