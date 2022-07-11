@@ -1,21 +1,21 @@
 package console
 
 import (
-	"himatro-api/internal/util"
-	"log"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
+// RootCmd :nodoc:
 var RootCmd = &cobra.Command{
 	Use: "Himatro API",
 }
 
+// Execute execute console command
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		util.LogErr("ERROR", "command failed to execute", err.Error())
-		log.Panic(err.Error())
+		logrus.Error(err)
 
 		os.Exit(1)
 	}

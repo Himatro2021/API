@@ -2,14 +2,15 @@ package console
 
 import (
 	"fmt"
-	"himatro-api/internal/db"
-	"himatro-api/internal/router"
-	"himatro-api/internal/util"
-	"log"
-	"net/http"
-	"os"
 
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/Himatro2021/API/internal/config"
+	"github.com/Himatro2021/API/internal/db"
+	"github.com/Himatro2021/API/internal/delivery/rest"
+	"github.com/Himatro2021/API/internal/helper"
+	"github.com/Himatro2021/API/internal/repository"
+	"github.com/Himatro2021/API/internal/usecase"
+	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -24,20 +25,28 @@ func init() {
 	RootCmd.AddCommand(runServer)
 }
 
+// InitServer initialize HTTP server
 func InitServer(cmd *cobra.Command, args []string) {
-	db.Connect()
+	db.InitializePostgresConn()
 
-	r := router.Router()
-	s := http.Server{
-		Addr:    os.Getenv("SERVER_PORT"),
-		Handler: r,
-	}
-
-	log.Print(fmt.Sprintf("Server listening on port %s", s.Addr))
-	err := s.ListenAndServe()
-
+	sqlDB, err := db.PostgresDB.DB()
 	if err != nil {
-		util.LogErr("ERROR", "SERVER failed to start", err.Error())
-		log.Fatal("Server failed to starts.", err)
+		logrus.Fatal("unable to start server. reason: ", err.Error())
 	}
+
+	defer helper.WrapCloser(sqlDB.Close)
+
+	userRepo := repository.NewUserRepository(db.PostgresDB)
+	userUsecase := usecase.NewUserUsecase(userRepo)
+
+	HTTPServer := echo.New()
+	RESTGroup := HTTPServer.Group("rest")
+
+	rest.InitService(RESTGroup, userUsecase)
+
+	if err := HTTPServer.Start(fmt.Sprintf(":%s", config.ServerPort())); err != nil {
+		logrus.Fatal("unable to start server. reason: ", err.Error())
+	}
+
+	logrus.Info("Server running on port: ", config.ServerPort())
 }
