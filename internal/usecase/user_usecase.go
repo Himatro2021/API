@@ -26,11 +26,33 @@ func (u *userUsecase) CreateInvitation(ctx context.Context, input model.UserInvi
 		"input": utils.Dump(ctx),
 	})
 
+	if err := input.Validate(); err != nil {
+		return nil, ErrValidation
+	}
+
+	isExists, err := u.userRepo.IsEmailAlreadyInvited(ctx, input.Email)
+	if err != nil {
+		logger.Error(err)
+		return nil, ErrInternal
+	}
+
+	// TODO implement reinvite member when feature sending invitation via email
+	// is implemented
+	if isExists {
+		_, _ = handleReinviteMember(ctx, input.Email)
+	}
+
 	invitation, err := u.userRepo.CreateInvitation(ctx, input.Name, input.Email)
 	if err != nil {
 		logger.Error(err)
-		return nil, err
+		return nil, ErrInternal
 	}
 
 	return invitation, nil
+}
+
+func handleReinviteMember(ctx context.Context, email string) (*model.UserInvitation, error) {
+	// TODO implement resending email when corresponding feature are implemented
+
+	return nil, nil
 }
