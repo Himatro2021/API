@@ -33,3 +33,23 @@ func ServerPort() string {
 
 	return cfg
 }
+
+// PrivateKey get private key from env
+func PrivateKey() string {
+	key := os.Getenv("PRIVATE_KEY")
+	if key == "" {
+		logrus.Error("PRIVATE_KEY is unset. May cause danger in encryption method")
+	}
+
+	return key
+}
+
+// IvKey get private key from env
+func IvKey() string {
+	key := os.Getenv("IV_KEY")
+	if key == "" {
+		logrus.Error("IV_KEY is unset. May cause danger in encryption method")
+	}
+
+	return key
+}
