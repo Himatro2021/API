@@ -49,3 +49,18 @@ func (mr *MockUserRepositoryMockRecorder) CreateInvitation(arg0, arg1, arg2 inte
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockUserRepository)(nil).CreateInvitation), arg0, arg1, arg2)
 }
+
+// IsEmailAlreadyInvited mocks base method.
+func (m *MockUserRepository) IsEmailAlreadyInvited(arg0 context.Context, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsEmailAlreadyInvited", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsEmailAlreadyInvited indicates an expected call of IsEmailAlreadyInvited.
+func (mr *MockUserRepositoryMockRecorder) IsEmailAlreadyInvited(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsEmailAlreadyInvited", reflect.TypeOf((*MockUserRepository)(nil).IsEmailAlreadyInvited), arg0, arg1)
+}
