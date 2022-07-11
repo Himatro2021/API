@@ -1,11 +1,22 @@
 package helper
 
 import (
+	"crypto/aes"
 	"errors"
 
+	"github.com/Himatro2021/API/internal/config"
+	"github.com/kumparan/go-utils/encryption"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// Cryptor :nodoc:
+func Cryptor() *encryption.AESCryptor {
+	prvKey := config.PrivateKey()
+	ivKey := config.IvKey()
+
+	return encryption.NewAESCryptor(prvKey, ivKey, aes.BlockSize)
+}
 
 // HashString encrypt given text
 func HashString(text string) (string, error) {
