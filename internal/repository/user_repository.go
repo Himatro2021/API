@@ -30,8 +30,10 @@ func (r *userRepository) CreateInvitation(ctx context.Context, name, email strin
 		"email": email,
 	})
 
-	invCode, err := helper.HashString(strconv.FormatInt(utils.GenerateID(), 10))
+	invCode := strconv.FormatInt(utils.GenerateID(), 10)
+	encrypted, err := helper.HashString(invCode)
 	if err != nil {
+		logger.Error(err)
 		return nil, err
 	}
 
@@ -39,7 +41,7 @@ func (r *userRepository) CreateInvitation(ctx context.Context, name, email strin
 		ID:             utils.GenerateID(),
 		Email:          email,
 		Name:           name,
-		InvitationCode: invCode,
+		InvitationCode: encrypted,
 	}
 
 	err = r.db.WithContext(ctx).Create(invitation).Error
@@ -47,6 +49,11 @@ func (r *userRepository) CreateInvitation(ctx context.Context, name, email strin
 		logger.Error(err)
 		return nil, err
 	}
+
+	// return unencrypted form of invitation code
+	// because this will only visible to admin who done the
+	// invitation
+	invitation.InvitationCode = invCode
 
 	return invitation, nil
 }
