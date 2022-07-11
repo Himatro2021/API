@@ -57,3 +57,24 @@ func (r *userRepository) CreateInvitation(ctx context.Context, name, email strin
 
 	return invitation, nil
 }
+
+func (r *userRepository) IsEmailAlreadyInvited(ctx context.Context, email string) (bool, error) {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":   utils.DumpIncomingContext(ctx),
+		"email": email,
+	})
+
+	invitation := &model.UserInvitation{}
+
+	err := r.db.WithContext(ctx).Model(&model.UserInvitation{}).
+		Where("email = ?", email).Take(invitation).Error
+	switch err {
+	case nil:
+		return true, nil
+	case gorm.ErrRecordNotFound:
+		return false, nil
+	default:
+		logger.Error(err)
+		return false, err
+	}
+}
