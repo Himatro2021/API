@@ -43,6 +43,7 @@ func TestUserUsecase_CreateInvitation(t *testing.T) {
 	}
 
 	t.Run("ok - created", func(t *testing.T) {
+		repo.EXPECT().IsEmailAlreadyInvited(ctx, input.Email).Times(1).Return(true, nil)
 		repo.EXPECT().CreateInvitation(ctx, input.Name, input.Email).Times(1).Return(invitation, nil)
 
 		_, err := uc.CreateInvitation(ctx, input)
@@ -51,7 +52,14 @@ func TestUserUsecase_CreateInvitation(t *testing.T) {
 		// assert.Equal(t, result.Email, input.Email)
 	})
 
-	t.Run("err from db", func(t *testing.T) {
+	t.Run("ok - doing reinvite", func(t *testing.T) {
+		// TODO implement unit test when reinvite member feature is implemented
+		// dont forget to also add unit test on the related edge cases
+		// e.g err from db when checking is exists
+	})
+
+	t.Run("err from db when inviting", func(t *testing.T) {
+		repo.EXPECT().IsEmailAlreadyInvited(ctx, input.Email).Times(1).Return(true, nil)
 		repo.EXPECT().CreateInvitation(ctx, input.Name, input.Email).Times(1).Return(nil, errors.New("err from db"))
 
 		_, err := uc.CreateInvitation(ctx, input)
