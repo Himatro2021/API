@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// LoadConf :nodoc:
 func LoadConf() {
 	if err := godotenv.Load(); err != nil {
 		logrus.Error(err)
