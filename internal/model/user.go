@@ -38,5 +38,5 @@ type UserUsecase interface {
 
 // UserRepository :nodoc:
 type UserRepository interface {
-	CreateInvitation(ctx context.Context, name string, email string) (*UserInvitation, error)
+	CreateInvitation(ctx context.Context, name, email string) (*UserInvitation, error)
 }
