@@ -16,15 +16,3 @@ var (
 	// ErrInternal self explained
 	ErrInternal = echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 )
-
-func customValidationErrMessage(m string) *echo.HTTPError {
-	type validationErr struct {
-		Message string `json:"message"`
-		Hint    string `json:"hint"`
-	}
-
-	return echo.NewHTTPError(http.StatusBadRequest, validationErr{
-		Message: "Validation Error",
-		Hint:    m,
-	})
-}
