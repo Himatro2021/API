@@ -7,6 +7,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Env get env value for ENV key
+func Env() string {
+	cfg := os.Getenv("ENV")
+
+	if cfg == "" {
+		return "development"
+	}
+
+	return cfg
+}
+
 // PostgresDSN get DSN string for postgres connection
 func PostgresDSN() string {
 	host := os.Getenv("PG_HOST")

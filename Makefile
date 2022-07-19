@@ -23,9 +23,16 @@ internal/model/mock/mock_user_usecase.go:
 	mockgen -destination=internal/model/mock/mock_user_usecase.go -package=mock github.com/Himatro2021/API/internal/model UserUsecase
 internal/model/mock/mock_user_repository.go:
 	mockgen -destination=internal/model/mock/mock_user_repository.go -package=mock github.com/Himatro2021/API/internal/model UserRepository
+internal/model/mock/mock_absent_usecase.go:
+	mockgen -destination=internal/model/mock/mock_absent_usecase.go -package=mock github.com/Himatro2021/API/internal/model AbsentUsecase
+internal/model/mock/mock_absent_repository.go:
+	mockgen -destination=internal/model/mock/mock_absent_repository.go -package=mock github.com/Himatro2021/API/internal/model AbsentRepository
+
 
 mockgen: internal/model/mock/mock_user_usecase.go \
-	internal/model/mock/mock_user_repository.go
+	internal/model/mock/mock_user_repository.go \
+	internal/model/mock/mock_absent_usecase.go \
+	internal/model/mock/mock_absent_repository.go
 
 clean:
 	rm -v internal/model/mock/mock_*.go

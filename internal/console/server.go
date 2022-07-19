@@ -10,6 +10,7 @@ import (
 	"github.com/Himatro2021/API/internal/repository"
 	"github.com/Himatro2021/API/internal/usecase"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -28,6 +29,7 @@ func init() {
 // InitServer initialize HTTP server
 func InitServer(cmd *cobra.Command, args []string) {
 	db.InitializePostgresConn()
+	setupLogger()
 
 	sqlDB, err := db.PostgresDB.DB()
 	if err != nil {
@@ -39,10 +41,17 @@ func InitServer(cmd *cobra.Command, args []string) {
 	userRepo := repository.NewUserRepository(db.PostgresDB)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 
+	absentRepo := repository.NewAbsentRepository(db.PostgresDB)
+	absentUsecase := usecase.NewAbsentUsecase(absentRepo)
+
 	HTTPServer := echo.New()
+
+	HTTPServer.Pre(middleware.AddTrailingSlash())
+	HTTPServer.Use(middleware.Logger())
+
 	RESTGroup := HTTPServer.Group("rest")
 
-	rest.InitService(RESTGroup, userUsecase)
+	rest.InitService(RESTGroup, userUsecase, absentUsecase)
 
 	if err := HTTPServer.Start(fmt.Sprintf(":%s", config.ServerPort())); err != nil {
 		logrus.Fatal("unable to start server. reason: ", err.Error())
