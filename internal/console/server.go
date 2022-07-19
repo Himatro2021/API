@@ -28,6 +28,7 @@ func init() {
 // InitServer initialize HTTP server
 func InitServer(cmd *cobra.Command, args []string) {
 	db.InitializePostgresConn()
+	setupLogger()
 
 	sqlDB, err := db.PostgresDB.DB()
 	if err != nil {
