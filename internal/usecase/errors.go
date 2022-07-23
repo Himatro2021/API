@@ -17,4 +17,7 @@ var (
 
 	// ErrAlreadyExists used when user tried to create same / duplicate entry
 	ErrAlreadyExists = errors.New("record already exists")
+
+	// ErrUnauthorized used when authorization process return error
+	ErrUnauthorized = errors.New("unauthorized")
 )
