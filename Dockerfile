@@ -1,10 +1,9 @@
-FROM golang:1.17.1-alpine
+FROM golang:1.18.3-alpine
 
 WORKDIR /app
 
 RUN mkdir bin
 RUN mkdir src
-RUN mkdir private_data
 
 COPY go.mod .
 COPY go.sum .
@@ -17,14 +16,10 @@ WORKDIR /app/src
 COPY . .
 RUN go build -o /app/bin/main main.go
 
-WORKDIR /app/private_data
+RUN rm -r /app/src/
 
-COPY private_data/ .
+WORKDIR /app/bin
 
-EXPOSE 8080
+COPY .env .
 
-WORKDIR /app
-
-RUN rm -r src/
-
-CMD ["./bin/main", "server"]
+CMD ["./main", "server"]
