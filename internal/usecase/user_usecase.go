@@ -3,7 +3,9 @@ package usecase
 import (
 	"context"
 
+	"github.com/Himatro2021/API/auth"
 	"github.com/Himatro2021/API/internal/model"
+	"github.com/Himatro2021/API/internal/rbac"
 	"github.com/kumparan/go-utils"
 	"github.com/sirupsen/logrus"
 )
@@ -25,6 +27,11 @@ func (u *userUsecase) CreateInvitation(ctx context.Context, input model.UserInvi
 		"ctx":   utils.DumpIncomingContext(ctx),
 		"input": utils.Dump(ctx),
 	})
+
+	user := auth.GetUserFromCtx(ctx)
+	if !user.HasAccess(rbac.ResourceUser, rbac.ActionInvite) {
+		return nil, ErrForbidden
+	}
 
 	if err := input.Validate(); err != nil {
 		return nil, ErrValidation
