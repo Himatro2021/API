@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -52,7 +51,9 @@ func (s *Service) handleCreateAbsentForm() echo.HandlerFunc {
 		case nil:
 			return ctx.JSON(http.StatusOK, form)
 		case usecase.ErrValidation:
-			return ErrBadRequest
+			return ErrValidation
+		case usecase.ErrForbidden:
+			return ErrForbidden
 		default:
 			logrus.WithFields(logrus.Fields{
 				"ctx":     utils.DumpIncomingContext(ctx.Request().Context()),
@@ -88,7 +89,12 @@ func (s *Service) handleGetAllAbsentForms() echo.HandlerFunc {
 		}
 
 		absentForms, err := s.absentUsecase.GetAllAbsentForm(ctx.Request().Context(), limitInt, offsetInt)
-		if errors.Is(err, usecase.ErrInternal) {
+		switch err {
+		case nil:
+			return ctx.JSON(http.StatusOK, absentForms)
+		case usecase.ErrForbidden:
+			return ErrForbidden
+		default:
 			logrus.WithFields(logrus.Fields{
 				"ctx":    utils.DumpIncomingContext(ctx.Request().Context()),
 				"limit":  limit,
@@ -97,8 +103,6 @@ func (s *Service) handleGetAllAbsentForms() echo.HandlerFunc {
 
 			return ErrInternal
 		}
-
-		return ctx.JSON(http.StatusOK, absentForms)
 	}
 }
 
@@ -121,6 +125,8 @@ func (s *Service) handleUpdateAbsentForm() echo.HandlerFunc {
 			return ctx.JSON(http.StatusOK, updatedForm)
 		case usecase.ErrNotFound:
 			return ErrNotFound
+		case usecase.ErrForbidden:
+			return ErrForbidden
 		default:
 			logrus.WithFields(logrus.Fields{
 				"ctx":   utils.DumpIncomingContext(ctx.Request().Context()),

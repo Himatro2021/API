@@ -130,7 +130,7 @@ func (r *absentRepository) GetAbsentListByCreatorID(ctx context.Context, formID,
 }
 
 // CreateAbsentForm self explained
-func (r *absentRepository) CreateAbsentForm(ctx context.Context, title string, start, finish time.Time, groupID int64) (*model.AbsentForm, error) {
+func (r *absentRepository) CreateAbsentForm(ctx context.Context, title string, start, finish time.Time, groupID, userID int64) (*model.AbsentForm, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"ctx":     utils.DumpIncomingContext(ctx),
 		"title":   title,
@@ -156,8 +156,8 @@ func (r *absentRepository) CreateAbsentForm(ctx context.Context, title string, s
 		UpdatedAt: now,
 
 		// TODO implement user authentication
-		CreatedBy: 1,
-		UpdatedBy: 1,
+		CreatedBy: userID,
+		UpdatedBy: userID,
 	}
 
 	err := r.db.WithContext(ctx).Table(form.TableName()).Create(form).Error

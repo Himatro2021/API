@@ -9,8 +9,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Himatro2021/API/auth"
 	"github.com/Himatro2021/API/internal/model"
 	"github.com/Himatro2021/API/internal/model/mock"
+	"github.com/Himatro2021/API/internal/rbac"
 	"github.com/Himatro2021/API/internal/usecase"
 	"github.com/golang/mock/gomock"
 	"github.com/kumparan/go-utils"
@@ -131,7 +133,12 @@ func TestAbsentService_handleCreateAbsentForm(t *testing.T) {
 		ID: utils.GenerateID(),
 	}
 
-	ctx := context.TODO()
+	admin := auth.User{
+		ID:    utils.GenerateID(),
+		Email: "",
+		Role:  rbac.RoleAdmin,
+	}
+	ctx := auth.SetUserToCtx(context.TODO(), admin)
 
 	t.Run("ok - created", func(t *testing.T) {
 		mock.EXPECT().CreateAbsentForm(ctx, input).Times(1).Return(absentForm, nil)
@@ -152,6 +159,7 @@ func TestAbsentService_handleCreateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		err := service.handleCreateAbsentForm()(ectx)
 
@@ -175,6 +183,7 @@ func TestAbsentService_handleCreateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		err := service.handleCreateAbsentForm()(ectx)
 
@@ -201,11 +210,12 @@ func TestAbsentService_handleCreateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		err := service.handleCreateAbsentForm()(ectx)
 
 		assert.Error(t, err)
-		assert.Equal(t, err, ErrBadRequest)
+		assert.Equal(t, err, ErrValidation)
 	})
 
 	t.Run("err - internal error from usecase", func(t *testing.T) {
@@ -227,11 +237,45 @@ func TestAbsentService_handleCreateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		err := service.handleCreateAbsentForm()(ectx)
 
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrInternal)
+	})
+
+	t.Run("ok - member don't have permission", func(t *testing.T) {
+		member := auth.User{
+			ID:   utils.GenerateID(),
+			Role: rbac.RoleMember,
+		}
+		memberCtx := auth.SetUserToCtx(context.TODO(), member)
+
+		ec := echo.New()
+
+		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(fmt.Sprintf(`
+			{
+				"title": "%s",
+				"start_at_date": "%s",
+				"start_at_time": "%s",
+				"finished_at_date": "%s",
+				"finished_at_time": "%s",
+				"group_member_id": %d
+			}
+		`, input.Title, input.StartAtDate, input.StartAtTime, input.FinishedAtDate, input.FinishedAtTime, input.GroupMemberID)))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(memberCtx))
+
+		mock.EXPECT().CreateAbsentForm(memberCtx, input).Times(1).Return(nil, usecase.ErrForbidden)
+
+		err := service.handleCreateAbsentForm()(ectx)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrForbidden)
 	})
 }
 
@@ -244,7 +288,11 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 		absentUsecase: mock,
 	}
 
-	ctx := context.TODO()
+	admin := auth.User{
+		ID:   utils.GenerateID(),
+		Role: rbac.RoleAdmin,
+	}
+	ctx := auth.SetUserToCtx(context.TODO(), admin)
 	limit := 0
 	offset := 0
 	absentForms := []model.AbsentForm{
@@ -261,6 +309,7 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetPath("/absent/form/")
 
@@ -280,6 +329,7 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetPath("/absent/form/")
 
@@ -299,6 +349,7 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetPath("/absent/form/")
 
@@ -318,6 +369,7 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetPath("/absent/form/")
 
@@ -337,6 +389,7 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetPath("/absent/form/")
 
@@ -357,6 +410,7 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetPath("/absent/form/")
 
@@ -373,6 +427,7 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetPath("/absent/form/")
 
@@ -380,6 +435,28 @@ func TestAbsentUsecase_handleGetAllAbsentForms(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrInternal)
+	})
+
+	t.Run("ok - non admin can't get all absent", func(t *testing.T) {
+		member := auth.User{
+			Role: rbac.RoleMember,
+		}
+		memberCtx := auth.SetUserToCtx(context.TODO(), member)
+		mock.EXPECT().GetAllAbsentForm(memberCtx, limit, offset).Times(1).Return(nil, usecase.ErrForbidden)
+
+		ec := echo.New()
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
+		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(memberCtx))
+
+		ectx.SetPath("/absent/form/")
+
+		err := service.handleGetAllAbsentForms()(ectx)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrForbidden)
 	})
 }
 
@@ -392,7 +469,11 @@ func TestAbsentService_handleUpdateAbsentForm(t *testing.T) {
 		absentUsecase: mock,
 	}
 
-	ctx := context.TODO()
+	admin := auth.User{
+		ID:   utils.GenerateID(),
+		Role: rbac.RoleAdmin,
+	}
+	ctx := auth.SetUserToCtx(context.TODO(), admin)
 
 	formID := utils.GenerateID()
 	updateInput := &model.CreateAbsentInput{
@@ -427,6 +508,7 @@ func TestAbsentService_handleUpdateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -453,6 +535,7 @@ func TestAbsentService_handleUpdateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues("ini invalid id")
@@ -480,6 +563,7 @@ func TestAbsentService_handleUpdateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -509,6 +593,7 @@ func TestAbsentService_handleUpdateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -520,7 +605,7 @@ func TestAbsentService_handleUpdateAbsentForm(t *testing.T) {
 	})
 
 	t.Run("ok - form not found", func(t *testing.T) {
-		mock.EXPECT().UpdateAbsentForm(ctx, formID, updateInput).Times(1).Return(nil, usecase.ErrInternal)
+		mock.EXPECT().UpdateAbsentForm(ctx, formID, updateInput).Times(1).Return(nil, usecase.ErrNotFound)
 
 		ec := echo.New()
 
@@ -538,6 +623,7 @@ func TestAbsentService_handleUpdateAbsentForm(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -545,7 +631,43 @@ func TestAbsentService_handleUpdateAbsentForm(t *testing.T) {
 		err := service.handleUpdateAbsentForm()(ectx)
 
 		assert.Error(t, err)
-		assert.Equal(t, err, ErrInternal)
+		assert.Equal(t, err, ErrNotFound)
+	})
+
+	t.Run("ok - non admin can't update absent form", func(t *testing.T) {
+		member := auth.User{
+			ID:   utils.GenerateID(),
+			Role: rbac.RoleAdmin,
+		}
+		memberCtx := auth.SetUserToCtx(context.TODO(), member)
+
+		mock.EXPECT().UpdateAbsentForm(memberCtx, formID, updateInput).Times(1).Return(nil, usecase.ErrForbidden)
+
+		ec := echo.New()
+
+		req := httptest.NewRequest(http.MethodPut, "/", strings.NewReader(fmt.Sprintf(`
+			{
+				"title": "%s",
+				"start_at_date": "%s",
+				"start_at_time": "%s",
+				"finished_at_date": "%s",
+				"finished_at_time": "%s",
+				"group_member_id": %d
+			}
+		`, updateInput.Title, updateInput.StartAtDate, updateInput.StartAtTime, updateInput.FinishedAtDate, updateInput.FinishedAtTime, updateInput.GroupMemberID)))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(memberCtx))
+
+		ectx.SetParamNames("id")
+		ectx.SetParamValues(fmt.Sprintf("%d", formID))
+
+		err := service.handleUpdateAbsentForm()(ectx)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrForbidden)
 	})
 }
 
@@ -558,7 +680,12 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 		absentUsecase: mock,
 	}
 
-	ctx := context.TODO()
+	member := auth.User{
+		ID:   utils.GenerateID(),
+		Role: rbac.RoleMember,
+	}
+	ctx := auth.SetUserToCtx(context.TODO(), member)
+
 	formID := utils.GenerateID()
 	status := "PRESENT"
 	reason := ""
@@ -566,6 +693,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 	absentList := &model.AbsentList{
 		ID:           utils.GenerateID(),
 		AbsentFormID: formID,
+		CreatedBy:    member.ID,
 	}
 
 	t.Run("ok - filled", func(t *testing.T) {
@@ -583,6 +711,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -605,6 +734,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues("fmt.Sprintf(")
@@ -627,6 +757,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -650,6 +781,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -678,6 +810,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		err := service.handleFillAbsentFormByAttendee()(ectx)
 
@@ -701,6 +834,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -726,6 +860,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -751,6 +886,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -776,6 +912,7 @@ func TestAbsentService_handleFillAbsentFormByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", formID))
@@ -796,7 +933,12 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 		absentUsecase: mock,
 	}
 
-	ctx := context.TODO()
+	member := auth.User{
+		ID:   utils.GenerateID(),
+		Role: rbac.RoleMember,
+	}
+	ctx := auth.SetUserToCtx(context.TODO(), member)
+
 	absentID := utils.GenerateID()
 	updateInput := &model.UpdateAbsentListInput{
 		AbsentFormID: absentID,
@@ -823,6 +965,7 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", absentID))
@@ -846,6 +989,7 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues("invalid id")
@@ -870,6 +1014,7 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", absentID))
@@ -896,6 +1041,7 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", absentID))
@@ -922,6 +1068,7 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", absentID))
@@ -948,6 +1095,7 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", absentID))
@@ -974,6 +1122,7 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
 
 		ectx.SetParamNames("id")
 		ectx.SetParamValues(fmt.Sprintf("%d", absentID))
@@ -982,6 +1131,36 @@ func TestAbsentService_handleUpdateAbsentListByAttendee(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrInternal)
+	})
+
+	t.Run("ok - updating another user absent list", func(t *testing.T) {
+		// improve: how do we really mock that the usecase detect the user trying to update
+		// another user list? the err returned is the same type with case when user try to fill already closed form
+		// any ideas?
+		mock.EXPECT().UpdateAbsentListByAttendee(ctx, absentID, updateInput).Times(1).Return(nil, usecase.ErrForbidden)
+
+		ec := echo.New()
+
+		req := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader(fmt.Sprintf(`
+			{
+				"absent_form_id": %d,
+				"status": "%s",
+				"reason": "%s"
+			}
+		`, updateInput.AbsentFormID, updateInput.Status, updateInput.Reason)))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+		ectx := ec.NewContext(req, rec)
+		ectx.SetRequest(ectx.Request().WithContext(ctx))
+
+		ectx.SetParamNames("id")
+		ectx.SetParamValues(fmt.Sprintf("%d", absentID))
+
+		err := service.handleUpdateAbsentListByAttendee()(ectx)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrForbidden)
 	})
 }
 

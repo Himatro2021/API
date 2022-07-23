@@ -10,22 +10,29 @@ type Service struct {
 	group         *echo.Group
 	userUsecase   model.UserUsecase
 	absentUsecase model.AbsentUsecase
+	authUsecase   model.AuthUsecase
 }
 
 // InitService self explained
-func InitService(group *echo.Group, userUsecase model.UserUsecase, absentUsecase model.AbsentUsecase) {
+func InitService(group *echo.Group, userUsecase model.UserUsecase, absentUsecase model.AbsentUsecase, authUsecase model.AuthUsecase) {
 	service := Service{
 		group:         group,
 		userUsecase:   userUsecase,
 		absentUsecase: absentUsecase,
+		authUsecase:   authUsecase,
 	}
 
 	service.initRoutes()
 }
 
 func (s *Service) initRoutes() {
+	s.initAuthHandlerRoutes()
 	s.initMemberHandlerRoutes()
 	s.initAbsentHandlerRoutes()
+}
+
+func (s *Service) initAuthHandlerRoutes() {
+	s.group.POST("/auth/login/", s.handleLoginByEmailAndPassword())
 }
 
 func (s *Service) initMemberHandlerRoutes() {

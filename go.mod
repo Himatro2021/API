@@ -11,6 +11,7 @@ require (
 	github.com/kumparan/go-utils v1.23.0
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/lib/pq v1.10.2
+	github.com/mattheath/base62 v0.0.0-20150408093626-b80cdc656a7a
 	github.com/rubenv/sql-migrate v1.1.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0

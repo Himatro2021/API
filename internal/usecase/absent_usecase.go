@@ -5,8 +5,10 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Himatro2021/API/auth"
 	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/model"
+	"github.com/Himatro2021/API/internal/rbac"
 	"github.com/Himatro2021/API/internal/repository"
 	"github.com/kumparan/go-utils"
 	"github.com/sirupsen/logrus"
@@ -87,6 +89,11 @@ func (au *absentUsecase) GetAllAbsentForm(ctx context.Context, limit, offset int
 		"offset": offset,
 	})
 
+	user := auth.GetUserFromCtx(ctx)
+	if !user.HasAccess(rbac.ResourceAbsentForm, rbac.ActionReadAll) {
+		return []model.AbsentForm{}, ErrForbidden
+	}
+
 	absentForms, err := au.absentRepo.GetAllAbsentForm(ctx, limit, offset)
 	if err != nil {
 		logger.Error(err)
@@ -102,6 +109,11 @@ func (au *absentUsecase) CreateAbsentForm(ctx context.Context, input *model.Crea
 		"ctx":   utils.DumpIncomingContext(ctx),
 		"input": utils.Dump(input),
 	})
+
+	user := auth.GetUserFromCtx(ctx)
+	if !user.HasAccess(rbac.ResourceAbsentForm, rbac.ActionCreateAny) {
+		return nil, ErrForbidden
+	}
 
 	if err := input.Validate(); err != nil {
 		logger.Error(err)
@@ -124,7 +136,7 @@ func (au *absentUsecase) CreateAbsentForm(ctx context.Context, input *model.Crea
 		return nil, ErrValidation
 	}
 
-	absentForm, err := au.absentRepo.CreateAbsentForm(ctx, input.Title, start, finish, input.GroupMemberID)
+	absentForm, err := au.absentRepo.CreateAbsentForm(ctx, input.Title, start, finish, input.GroupMemberID, user.ID)
 	if err != nil {
 		logger.Error(err)
 		return nil, ErrInternal
@@ -148,6 +160,11 @@ func (au *absentUsecase) FillAbsentFormByAttendee(ctx context.Context, absentFor
 		"formID": absentFormID,
 	})
 
+	user := auth.GetUserFromCtx(ctx)
+	if !user.HasAccess(rbac.ResourceAbsentList, rbac.ActionCreateAny) {
+		return nil, ErrForbidden
+	}
+
 	presenceStatus, err := au.transformStringToStatus(status)
 	if err != nil {
 		return nil, ErrValidation
@@ -168,9 +185,7 @@ func (au *absentUsecase) FillAbsentFormByAttendee(ctx context.Context, absentFor
 		return nil, ErrForbidden
 	}
 
-	// TODO use ctx based user id
-	// https://github.com/Himatro2021/API/issues/21
-	absentList, err := au.absentRepo.GetAbsentListByCreatorID(ctx, absentFormID, int64(1))
+	absentList, err := au.absentRepo.GetAbsentListByCreatorID(ctx, absentFormID, user.ID)
 	if err != nil && err != repository.ErrNotFound {
 		logger.Error(err)
 		return nil, ErrInternal
@@ -183,9 +198,7 @@ func (au *absentUsecase) FillAbsentFormByAttendee(ctx context.Context, absentFor
 	// TODO add group checking between absent form group and user id
 	// https://github.com/Himatro2021/API/issues/20
 
-	// TODO use ctx based user id
-	// https://github.com/Himatro2021/API/issues/21
-	absentList, err = au.absentRepo.FillAbsentFormByAttendee(ctx, int64(1), absentFormID, presenceStatus, reason)
+	absentList, err = au.absentRepo.FillAbsentFormByAttendee(ctx, user.ID, absentFormID, presenceStatus, reason)
 	if err != nil {
 		logger.Error(err)
 		return nil, ErrInternal
@@ -201,6 +214,11 @@ func (au *absentUsecase) UpdateAbsentListByAttendee(ctx context.Context, absentL
 		"absentListID": absentListID,
 		"input":        utils.Dump(input),
 	})
+
+	user := auth.GetUserFromCtx(ctx)
+	if !user.HasAccess(rbac.ResourceAbsentList, rbac.ActionCreateAny) {
+		return nil, ErrForbidden
+	}
 
 	if err := input.Validate(); err != nil {
 		return nil, ErrValidation
@@ -237,7 +255,9 @@ func (au *absentUsecase) UpdateAbsentListByAttendee(ctx context.Context, absentL
 		return nil, ErrInternal
 	}
 
-	// TODO check whether the user is the owner of that absent list
+	if absentList.CreatedBy != user.ID {
+		return nil, ErrForbidden
+	}
 
 	absentList.Status = presenceStatus
 	absentList.ExecuseReason = input.Reason
@@ -258,6 +278,11 @@ func (au *absentUsecase) UpdateAbsentForm(ctx context.Context, absentFormID int6
 		"input":  utils.Dump(input),
 		"formID": absentFormID,
 	})
+
+	user := auth.GetUserFromCtx(ctx)
+	if !user.HasAccess(rbac.ResourceAbsentForm, rbac.ActionUpdateAny) {
+		return nil, ErrForbidden
+	}
 
 	if err := input.Validate(); err != nil {
 		return nil, ErrValidation

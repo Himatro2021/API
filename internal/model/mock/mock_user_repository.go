@@ -50,6 +50,36 @@ func (mr *MockUserRepositoryMockRecorder) CreateInvitation(arg0, arg1, arg2 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockUserRepository)(nil).CreateInvitation), arg0, arg1, arg2)
 }
 
+// GetUserByEmail mocks base method.
+func (m *MockUserRepository) GetUserByEmail(arg0 context.Context, arg1 string) (*model.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByEmail", arg0, arg1)
+	ret0, _ := ret[0].(*model.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByEmail indicates an expected call of GetUserByEmail.
+func (mr *MockUserRepositoryMockRecorder) GetUserByEmail(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetUserByEmail), arg0, arg1)
+}
+
+// GetUserByID mocks base method.
+func (m *MockUserRepository) GetUserByID(arg0 context.Context, arg1 int64) (*model.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByID", arg0, arg1)
+	ret0, _ := ret[0].(*model.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByID indicates an expected call of GetUserByID.
+func (mr *MockUserRepositoryMockRecorder) GetUserByID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepository)(nil).GetUserByID), arg0, arg1)
+}
+
 // IsEmailAlreadyInvited mocks base method.
 func (m *MockUserRepository) IsEmailAlreadyInvited(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()

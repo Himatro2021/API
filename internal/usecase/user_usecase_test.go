@@ -7,9 +7,11 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Himatro2021/API/auth"
 	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/model"
 	"github.com/Himatro2021/API/internal/model/mock"
+	"github.com/Himatro2021/API/internal/rbac"
 	"github.com/golang/mock/gomock"
 	"github.com/kumparan/go-utils"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +21,11 @@ func TestUserUsecase_CreateInvitation(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx := context.TODO()
+	admin := auth.User{
+		ID:   utils.GenerateID(),
+		Role: rbac.RoleAdmin,
+	}
+	ctx := auth.SetUserToCtx(context.TODO(), admin)
 	_ = os.Setenv("PRIVATE_KEY", "7F8r47rRaaVJUUpcbpn5xLSKj7zL1lr4jemeI4ARqPTRBlcEPNl3mDp7m1lY")
 	_ = os.Setenv("IV_KEY", "4e6064d3814c2cd22c5501aswepoicn8")
 	repo := mock.NewMockUserRepository(ctrl)
@@ -65,5 +71,17 @@ func TestUserUsecase_CreateInvitation(t *testing.T) {
 		_, err := uc.CreateInvitation(ctx, input)
 
 		assert.Error(t, err)
+	})
+
+	t.Run("ok - non admin can't invite", func(t *testing.T) {
+		member := auth.User{
+			Role: rbac.RoleMember,
+		}
+		memberCtx := auth.SetUserToCtx(context.TODO(), member)
+
+		_, err := uc.CreateInvitation(memberCtx, input)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrForbidden)
 	})
 }

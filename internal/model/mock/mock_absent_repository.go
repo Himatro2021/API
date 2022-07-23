@@ -37,18 +37,18 @@ func (m *MockAbsentRepository) EXPECT() *MockAbsentRepositoryMockRecorder {
 }
 
 // CreateAbsentForm mocks base method.
-func (m *MockAbsentRepository) CreateAbsentForm(arg0 context.Context, arg1 string, arg2, arg3 time.Time, arg4 int64) (*model.AbsentForm, error) {
+func (m *MockAbsentRepository) CreateAbsentForm(arg0 context.Context, arg1 string, arg2, arg3 time.Time, arg4, arg5 int64) (*model.AbsentForm, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAbsentForm", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "CreateAbsentForm", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(*model.AbsentForm)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateAbsentForm indicates an expected call of CreateAbsentForm.
-func (mr *MockAbsentRepositoryMockRecorder) CreateAbsentForm(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockAbsentRepositoryMockRecorder) CreateAbsentForm(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAbsentForm", reflect.TypeOf((*MockAbsentRepository)(nil).CreateAbsentForm), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAbsentForm", reflect.TypeOf((*MockAbsentRepository)(nil).CreateAbsentForm), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // FillAbsentFormByAttendee mocks base method.
