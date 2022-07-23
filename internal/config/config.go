@@ -3,8 +3,20 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	// DefaultTokenLength ruled how long the token should be generated
+	DefaultTokenLength = 90
+
+	// DefaultAccessTokenExpiry ruled how long the access token expired in hour
+	DefaultAccessTokenExpiry = time.Hour * 24 * 7
+
+	// DefaultRefreshTokenExpiry ruled how long the refresh token expired in hour
+	DefaultRefreshTokenExpiry = time.Hour * 24 * 30
 )
 
 // Env get env value for ENV key
