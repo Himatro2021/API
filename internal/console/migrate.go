@@ -25,7 +25,7 @@ func init() {
 	RootCmd.AddCommand(runMigrate)
 }
 
-func migration(cmd *cobra.Command, args []string) {
+func migration(cmd *cobra.Command, _ []string) {
 	direction := cmd.Flag("direction").Value.String()
 	stepStr := cmd.Flag("step").Value.String()
 	step, err := strconv.Atoi(stepStr)
