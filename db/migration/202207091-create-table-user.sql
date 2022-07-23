@@ -1,7 +1,7 @@
 -- +migrate Up notransaction
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT PRIMARY KEY,
-    email text,
+    email text UNIQUE NOT NULL,
     password text,
     name text
 );
