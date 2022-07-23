@@ -3,6 +3,7 @@ package console
 import (
 	"fmt"
 
+	auth "github.com/Himatro2021/API/auth"
 	"github.com/Himatro2021/API/internal/config"
 	"github.com/Himatro2021/API/internal/db"
 	"github.com/Himatro2021/API/internal/delivery/rest"
@@ -27,7 +28,7 @@ func init() {
 }
 
 // InitServer initialize HTTP server
-func InitServer(cmd *cobra.Command, args []string) {
+func InitServer(_ *cobra.Command, _ []string) {
 	db.InitializePostgresConn()
 	setupLogger()
 
@@ -38,20 +39,28 @@ func InitServer(cmd *cobra.Command, args []string) {
 
 	defer helper.WrapCloser(sqlDB.Close)
 
+	sessionRepo := repository.NewSessionRepository(db.PostgresDB)
+
 	userRepo := repository.NewUserRepository(db.PostgresDB)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 
 	absentRepo := repository.NewAbsentRepository(db.PostgresDB)
 	absentUsecase := usecase.NewAbsentUsecase(absentRepo)
 
+	authUesecase := usecase.NewAuthUsecase(sessionRepo, userRepo)
+
+	httpMiddleware := auth.NewMiddleware(sessionRepo, userRepo)
+
 	HTTPServer := echo.New()
 
 	HTTPServer.Pre(middleware.AddTrailingSlash())
 	HTTPServer.Use(middleware.Logger())
+	HTTPServer.Use(httpMiddleware.UserSessionMiddleware())
+	HTTPServer.Use(httpMiddleware.RejectUnauthorizedRequest())
 
 	RESTGroup := HTTPServer.Group("rest")
 
-	rest.InitService(RESTGroup, userUsecase, absentUsecase)
+	rest.InitService(RESTGroup, userUsecase, absentUsecase, authUesecase)
 
 	if err := HTTPServer.Start(fmt.Sprintf(":%s", config.ServerPort())); err != nil {
 		logrus.Fatal("unable to start server. reason: ", err.Error())
