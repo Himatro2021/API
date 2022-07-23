@@ -65,9 +65,16 @@ func (am *Middleware) UserSessionMiddleware() echo.MiddlewareFunc {
 }
 
 // RejectUnauthorizedRequest if no user in context, return unauthorized error. otherwise pass
-func (am *Middleware) RejectUnauthorizedRequest() echo.MiddlewareFunc {
+func (am *Middleware) RejectUnauthorizedRequest(skipURL []string) echo.MiddlewareFunc {
 	return func(hf echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
+			url := ctx.Request().URL
+			for _, skip := range skipURL {
+				if url.Path == skip {
+					return hf(ctx)
+				}
+			}
+
 			user := GetUserFromCtx(ctx.Request().Context())
 			if user == nil {
 				return ErrUnauthorized
