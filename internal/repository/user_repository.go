@@ -78,3 +78,42 @@ func (r *userRepository) IsEmailAlreadyInvited(ctx context.Context, email string
 		return false, err
 	}
 }
+
+func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":   utils.DumpIncomingContext(ctx),
+		"email": email,
+	})
+
+	user := &model.User{}
+	err := r.db.WithContext(ctx).Model(&model.User{}).Where("email = ?", email).Take(user).Error
+	switch err {
+	case nil:
+		return user, nil
+	case gorm.ErrRecordNotFound:
+		return nil, ErrNotFound
+	default:
+		logger.Error(err)
+		return nil, err
+	}
+}
+
+func (r *userRepository) GetUserByID(ctx context.Context, id int64) (*model.User, error) {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":    utils.DumpIncomingContext(ctx),
+		"userID": id,
+	})
+
+	user := &model.User{}
+
+	err := r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Take(user).Error
+	switch err {
+	case nil:
+		return user, nil
+	case gorm.ErrRecordNotFound:
+		return nil, ErrNotFound
+	default:
+		logger.Error(err)
+		return nil, err
+	}
+}
