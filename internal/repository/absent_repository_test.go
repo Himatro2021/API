@@ -25,7 +25,7 @@ func TestAbsentRepository_GetAbsentFormByID(t *testing.T) {
 		db: kit.db,
 	}
 
-	t.Run("ok - found", func(t *testing.T) {
+	t.Run("ok - found as member", func(t *testing.T) {
 		mock.ExpectQuery(`^SELECT .+ FROM "absent_forms"`).
 			WithArgs(formID).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(formID))
 
@@ -161,6 +161,7 @@ func TestAbsentRepo_CreateAbsentForm(t *testing.T) {
 	start, _ := helper.ParseDateAndTimeStringToTime("2001-10-29", "12:00")
 	finish, _ := helper.ParseDateAndTimeStringToTime("3001-1-20", "13:00")
 	groupID := utils.GenerateID()
+	userID := utils.GenerateID()
 	form := &model.AbsentForm{
 		ID:         utils.GenerateID(),
 		Title:      title,
@@ -173,7 +174,7 @@ func TestAbsentRepo_CreateAbsentForm(t *testing.T) {
 		mock.ExpectQuery(`INSERT INTO "absent_forms"`).WithArgs(groupID, start, finish, title, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(form.ID))
 		mock.ExpectCommit()
 
-		absentForm, err := repo.CreateAbsentForm(ctx, title, start, finish, groupID)
+		absentForm, err := repo.CreateAbsentForm(ctx, title, start, finish, groupID, userID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, absentForm.ParticipantGroupID, groupID)
@@ -184,7 +185,7 @@ func TestAbsentRepo_CreateAbsentForm(t *testing.T) {
 		mock.ExpectQuery(`INSERT INTO "absent_forms"`).WithArgs(groupID, start, finish, title, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnError(errors.New("err db"))
 		mock.ExpectRollback()
 
-		_, err := repo.CreateAbsentForm(ctx, title, start, finish, groupID)
+		_, err := repo.CreateAbsentForm(ctx, title, start, finish, groupID, userID)
 
 		assert.Error(t, err)
 	})
