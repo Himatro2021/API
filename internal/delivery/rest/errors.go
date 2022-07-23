@@ -24,4 +24,7 @@ var (
 
 	// ErrAlreadyExists self explained
 	ErrAlreadyExists = echo.NewHTTPError(http.StatusForbidden, "Record already exists!")
+
+	// ErrUnauthorized self explained
+	ErrUnauthorized = echo.NewHTTPError(http.StatusUnauthorized, "Access Unauthorized.")
 )
