@@ -15,6 +15,7 @@ WORKDIR /app/src
 
 COPY . .
 RUN go build -o /app/bin/main main.go
+RUN make migrate
 
 RUN rm -r /app/src/
 
