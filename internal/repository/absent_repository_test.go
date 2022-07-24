@@ -239,6 +239,7 @@ func TestAbsentRepository_UpdateAbsentForm(t *testing.T) {
 	start, _ := helper.ParseDateAndTimeStringToTime("2001-10-29", "12:00")
 	finish, _ := helper.ParseDateAndTimeStringToTime("3001-1-20", "13:00")
 	groupID := utils.GenerateID()
+	userID := utils.GenerateID()
 	form := &model.AbsentForm{
 		ID:         utils.GenerateID(),
 		Title:      title,
@@ -254,7 +255,7 @@ func TestAbsentRepository_UpdateAbsentForm(t *testing.T) {
 			WithArgs(groupID, start, finish, title, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(form.ID, 1))
 		mock.ExpectCommit()
 
-		absentForm, err := repo.UpdateAbsentForm(ctx, form.ID, title, start, finish, groupID)
+		absentForm, err := repo.UpdateAbsentForm(ctx, form.ID, title, start, finish, groupID, userID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, absentForm.ID, form.ID)
@@ -263,7 +264,7 @@ func TestAbsentRepository_UpdateAbsentForm(t *testing.T) {
 	t.Run("ok - absent form not found", func(t *testing.T) {
 		mock.ExpectQuery(`^SELECT .+ FROM "absent_forms"`).WithArgs(form.ID).WillReturnRows(sqlmock.NewRows([]string{"id"}))
 
-		_, err := repo.UpdateAbsentForm(ctx, form.ID, title, start, finish, groupID)
+		_, err := repo.UpdateAbsentForm(ctx, form.ID, title, start, finish, groupID, userID)
 
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrNotFound)
@@ -272,7 +273,7 @@ func TestAbsentRepository_UpdateAbsentForm(t *testing.T) {
 	t.Run("err when find absent form", func(t *testing.T) {
 		mock.ExpectQuery(`^SELECT .+ FROM "absent_forms"`).WithArgs(form.ID).WillReturnError(errors.New("err db"))
 
-		_, err := repo.UpdateAbsentForm(ctx, form.ID, title, start, finish, groupID)
+		_, err := repo.UpdateAbsentForm(ctx, form.ID, title, start, finish, groupID, userID)
 
 		assert.Error(t, err)
 	})
@@ -285,7 +286,7 @@ func TestAbsentRepository_UpdateAbsentForm(t *testing.T) {
 			WithArgs(groupID, start, finish, title, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnError(errors.New("err db"))
 		mock.ExpectCommit()
 
-		_, err := repo.UpdateAbsentForm(ctx, form.ID, title, start, finish, groupID)
+		_, err := repo.UpdateAbsentForm(ctx, form.ID, title, start, finish, groupID, userID)
 
 		assert.Error(t, err)
 	})

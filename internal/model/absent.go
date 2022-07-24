@@ -49,7 +49,7 @@ type AbsentRepository interface {
 	GetAbsentListByCreatorID(ctx context.Context, formID, creatorID int64) (*AbsentList, error)
 	CreateAbsentForm(ctx context.Context, title string, start, finish time.Time, groupID, userID int64) (*AbsentForm, error)
 	FillAbsentFormByAttendee(ctx context.Context, userID, formID int64, status Status, reason string) (*AbsentList, error)
-	UpdateAbsentForm(ctx context.Context, absentFormID int64, title string, start, finish time.Time, groupID int64) (*AbsentForm, error)
+	UpdateAbsentForm(ctx context.Context, absentFormID int64, title string, start, finish time.Time, groupID, userID int64) (*AbsentForm, error)
 	UpdateAbsentListByAttendee(ctx context.Context, absentList *AbsentList) (*AbsentList, error)
 }
 

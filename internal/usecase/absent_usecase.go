@@ -304,7 +304,7 @@ func (au *absentUsecase) UpdateAbsentForm(ctx context.Context, absentFormID int6
 		return nil, ErrValidation
 	}
 
-	newAbsentForm, err := au.absentRepo.UpdateAbsentForm(ctx, absentFormID, input.Title, start, finish, input.GroupMemberID)
+	newAbsentForm, err := au.absentRepo.UpdateAbsentForm(ctx, absentFormID, input.Title, start, finish, input.GroupMemberID, user.ID)
 	switch err {
 	case nil:
 		return newAbsentForm, nil
