@@ -35,17 +35,17 @@ type User struct {
 	Name     string `json:"name"`
 	Email    string `json:"email" gorm:"unique"`
 	Password string `json:"-"`
-	role     rbac.Role
+	Role     rbac.Role
 }
 
 // SetRole set role to a user. Is this needed?
 func (u *User) SetRole(role rbac.Role) {
-	u.role = role
+	u.Role = role
 }
 
 // GetRole return user role
 func (u *User) GetRole() rbac.Role {
-	return u.role
+	return u.Role
 }
 
 // UserUsecase :nodoc:
