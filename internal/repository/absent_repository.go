@@ -199,7 +199,7 @@ func (r *absentRepository) FillAbsentFormByAttendee(ctx context.Context, userID,
 }
 
 // UpdateAbsentForm used by admin to update data about absent form
-func (r *absentRepository) UpdateAbsentForm(ctx context.Context, absentFormID int64, title string, start, finish time.Time, groupID int64) (*model.AbsentForm, error) {
+func (r *absentRepository) UpdateAbsentForm(ctx context.Context, absentFormID int64, title string, start, finish time.Time, groupID, userID int64) (*model.AbsentForm, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"ctx":     utils.DumpIncomingContext(ctx),
 		"id":      absentFormID,
@@ -227,9 +227,7 @@ func (r *absentRepository) UpdateAbsentForm(ctx context.Context, absentFormID in
 	// TODO add implementation for allow update and create confirmation
 	absentForm.UpdatedAt = now
 
-	// TODO add user authentication and ctx based userID assign
-	absentForm.UpdatedBy = int64(1)
-
+	absentForm.UpdatedBy = userID
 	absentForm.StartAt = start
 	absentForm.FinishedAt = finish
 	absentForm.ParticipantGroupID = groupID

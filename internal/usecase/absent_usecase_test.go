@@ -619,7 +619,7 @@ func TestAbsentUsecase_UpdateAbsentForm(t *testing.T) {
 	finish, _ := helper.ParseDateAndTimeStringToTime(updateInput.FinishedAtDate, updateInput.FinishedAtTime)
 
 	t.Run("ok - updated", func(t *testing.T) {
-		repo.EXPECT().UpdateAbsentForm(ctx, formID, title, start, finish, groupID).Times(1).Return(absentForm, nil)
+		repo.EXPECT().UpdateAbsentForm(ctx, formID, title, start, finish, groupID, admin.ID).Times(1).Return(absentForm, nil)
 
 		result, err := uc.UpdateAbsentForm(ctx, formID, updateInput)
 
@@ -678,7 +678,7 @@ func TestAbsentUsecase_UpdateAbsentForm(t *testing.T) {
 	})
 
 	t.Run("err from db", func(t *testing.T) {
-		repo.EXPECT().UpdateAbsentForm(ctx, formID, title, start, finish, groupID).Times(1).Return(nil, errors.New("err db"))
+		repo.EXPECT().UpdateAbsentForm(ctx, formID, title, start, finish, groupID, admin.ID).Times(1).Return(nil, errors.New("err db"))
 
 		_, err := uc.UpdateAbsentForm(ctx, formID, updateInput)
 

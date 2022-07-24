@@ -142,18 +142,18 @@ func (mr *MockAbsentRepositoryMockRecorder) GetParticipantsByFormID(arg0, arg1 i
 }
 
 // UpdateAbsentForm mocks base method.
-func (m *MockAbsentRepository) UpdateAbsentForm(arg0 context.Context, arg1 int64, arg2 string, arg3, arg4 time.Time, arg5 int64) (*model.AbsentForm, error) {
+func (m *MockAbsentRepository) UpdateAbsentForm(arg0 context.Context, arg1 int64, arg2 string, arg3, arg4 time.Time, arg5, arg6 int64) (*model.AbsentForm, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAbsentForm", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "UpdateAbsentForm", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 	ret0, _ := ret[0].(*model.AbsentForm)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateAbsentForm indicates an expected call of UpdateAbsentForm.
-func (mr *MockAbsentRepositoryMockRecorder) UpdateAbsentForm(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAbsentRepositoryMockRecorder) UpdateAbsentForm(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAbsentForm", reflect.TypeOf((*MockAbsentRepository)(nil).UpdateAbsentForm), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAbsentForm", reflect.TypeOf((*MockAbsentRepository)(nil).UpdateAbsentForm), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
 // UpdateAbsentListByAttendee mocks base method.
