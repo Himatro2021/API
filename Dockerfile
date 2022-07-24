@@ -15,7 +15,6 @@ WORKDIR /app/src
 
 COPY . .
 RUN go build -o /app/bin/main main.go
-RUN go run main.go migrate --direction=up --step=0
 
 RUN rm -r /app/src/
 
