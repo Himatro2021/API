@@ -2,14 +2,17 @@ package console
 
 import (
 	"fmt"
-	"himatro-api/internal/db"
-	"himatro-api/internal/router"
-	"himatro-api/internal/util"
-	"log"
-	"net/http"
-	"os"
 
-	_ "github.com/joho/godotenv/autoload"
+	auth "github.com/Himatro2021/API/auth"
+	"github.com/Himatro2021/API/internal/config"
+	"github.com/Himatro2021/API/internal/db"
+	"github.com/Himatro2021/API/internal/delivery/rest"
+	"github.com/Himatro2021/API/internal/helper"
+	"github.com/Himatro2021/API/internal/repository"
+	"github.com/Himatro2021/API/internal/usecase"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -24,20 +27,46 @@ func init() {
 	RootCmd.AddCommand(runServer)
 }
 
-func InitServer(cmd *cobra.Command, args []string) {
-	db.Connect()
+// InitServer initialize HTTP server
+func InitServer(_ *cobra.Command, _ []string) {
+	db.InitializePostgresConn()
+	setupLogger()
 
-	r := router.Router()
-	s := http.Server{
-		Addr:    os.Getenv("SERVER_PORT"),
-		Handler: r,
-	}
-
-	log.Print(fmt.Sprintf("Server listening on port %s", s.Addr))
-	err := s.ListenAndServe()
-
+	sqlDB, err := db.PostgresDB.DB()
 	if err != nil {
-		util.LogErr("ERROR", "SERVER failed to start", err.Error())
-		log.Fatal("Server failed to starts.", err)
+		logrus.Fatal("unable to start server. reason: ", err.Error())
 	}
+
+	defer helper.WrapCloser(sqlDB.Close)
+
+	sessionRepo := repository.NewSessionRepository(db.PostgresDB)
+
+	userRepo := repository.NewUserRepository(db.PostgresDB)
+	userUsecase := usecase.NewUserUsecase(userRepo)
+
+	absentRepo := repository.NewAbsentRepository(db.PostgresDB)
+	absentUsecase := usecase.NewAbsentUsecase(absentRepo)
+
+	authUesecase := usecase.NewAuthUsecase(sessionRepo, userRepo)
+
+	httpMiddleware := auth.NewMiddleware(sessionRepo, userRepo)
+
+	HTTPServer := echo.New()
+
+	HTTPServer.Pre(middleware.AddTrailingSlash())
+	HTTPServer.Use(middleware.Logger())
+	HTTPServer.Use(httpMiddleware.UserSessionMiddleware())
+
+	skipAuthRejectURL := []string{"/rest/auth/login/"}
+	HTTPServer.Use(httpMiddleware.RejectUnauthorizedRequest(skipAuthRejectURL))
+
+	RESTGroup := HTTPServer.Group("rest")
+
+	rest.InitService(RESTGroup, userUsecase, absentUsecase, authUesecase)
+
+	if err := HTTPServer.Start(fmt.Sprintf(":%s", config.ServerPort())); err != nil {
+		logrus.Fatal("unable to start server. reason: ", err.Error())
+	}
+
+	logrus.Info("Server running on port: ", config.ServerPort())
 }
