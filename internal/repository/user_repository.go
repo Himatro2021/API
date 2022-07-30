@@ -23,25 +23,19 @@ func NewUserRepository(db *gorm.DB) model.UserRepository {
 }
 
 // CreateInvitation create invitation for member
-func (r *userRepository) CreateInvitation(ctx context.Context, name, email string) (*model.UserInvitation, error) {
+func (r *userRepository) CreateInvitation(ctx context.Context, invitation *model.UserInvitation) error {
 	logger := logrus.WithFields(logrus.Fields{
-		"ctx":   utils.DumpIncomingContext(ctx),
-		"name":  name,
-		"email": email,
+		"ctx":        utils.DumpIncomingContext(ctx),
+		"invitation": utils.Dump(invitation),
 	})
 
-	invCode := strconv.FormatInt(utils.GenerateID(), 10)
-	encrypted, err := helper.HashString(invCode)
+	err := r.db.WithContext(ctx).Create(invitation).Error
 	if err != nil {
 		logger.Error(err)
-		return nil, err
+		return err
 	}
 
-	invitation := &model.UserInvitation{
-		ID:             utils.GenerateID(),
-		Email:          email,
-		Name:           name,
-		InvitationCode: encrypted,
+	return nil
 	}
 
 	err = r.db.WithContext(ctx).Create(invitation).Error
