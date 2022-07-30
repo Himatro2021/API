@@ -1,5 +1,10 @@
 package rbac
 
+import (
+	"errors"
+	"strings"
+)
+
 // Role define what roles are available in this app
 type Role string
 
@@ -72,4 +77,17 @@ func HasAccess(userRole Role, resource Resource, action Action) bool {
 	}
 
 	return false
+}
+
+// ParseStringToRole parse given string to it's equivalent rbac.Role
+func ParseStringToRole(str string) (Role, error) {
+	role := strings.ToUpper(str)
+	switch role {
+	default:
+		return RoleMember, errors.New("invalid role")
+	case RoleMember:
+		return RoleMember, nil
+	case RoleAdmin:
+		return RoleAdmin, nil
+	}
 }
