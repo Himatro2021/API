@@ -2,9 +2,7 @@ package repository
 
 import (
 	"context"
-	"strconv"
 
-	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/model"
 	"github.com/kumparan/go-utils"
 	"github.com/sirupsen/logrus"
@@ -36,22 +34,9 @@ func (r *userRepository) CreateInvitation(ctx context.Context, invitation *model
 	}
 
 	return nil
-	}
-
-	err = r.db.WithContext(ctx).Create(invitation).Error
-	if err != nil {
-		logger.Error(err)
-		return nil, err
-	}
-
-	// return unencrypted form of invitation code
-	// because this will only visible to admin who done the
-	// invitation
-	invitation.InvitationCode = invCode
-
-	return invitation, nil
 }
 
+// IsEmailAlreadyInvited checking is given email already invited or not based on db record
 func (r *userRepository) IsEmailAlreadyInvited(ctx context.Context, email string) (bool, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"ctx":   utils.DumpIncomingContext(ctx),
@@ -73,6 +58,7 @@ func (r *userRepository) IsEmailAlreadyInvited(ctx context.Context, email string
 	}
 }
 
+// GetUserByEmail get user information from given email address
 func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"ctx":   utils.DumpIncomingContext(ctx),
@@ -92,6 +78,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	}
 }
 
+// GetUserByID self explained
 func (r *userRepository) GetUserByID(ctx context.Context, id int64) (*model.User, error) {
 	logger := logrus.WithFields(logrus.Fields{
 		"ctx":    utils.DumpIncomingContext(ctx),
@@ -109,5 +96,44 @@ func (r *userRepository) GetUserByID(ctx context.Context, id int64) (*model.User
 	default:
 		logger.Error(err)
 		return nil, err
+	}
+}
+
+// MarkInvitationStatus set invitation status to given model.InvitationStatus. This doesn't check if
+// the invitation is exists or not in the first place
+func (r *userRepository) MarkInvitationStatus(ctx context.Context, invitation *model.UserInvitation, status model.InvitationStatus) error {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":        utils.DumpIncomingContext(ctx),
+		"invitation": utils.Dump(invitation),
+	})
+
+	invitation.Status = status
+
+	err := r.db.WithContext(ctx).Save(invitation).Error
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+// CheckIsInvitationExists get invitation from invitation code
+func (r *userRepository) CheckIsInvitationExists(ctx context.Context, invitationCode string) error {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":            utils.DumpIncomingContext(ctx),
+		"invitationCode": invitationCode,
+	})
+
+	invitation := &model.UserInvitation{}
+	err := r.db.Model(&model.UserInvitation{}).Where("invitation_code = ?", invitationCode).Take(invitation).Error
+	switch err {
+	default:
+		logger.Error(err)
+		return err
+	case gorm.ErrRecordNotFound:
+		return ErrNotFound
+	case nil:
+		return nil
 	}
 }
