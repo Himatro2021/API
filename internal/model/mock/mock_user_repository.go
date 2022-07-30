@@ -35,19 +35,32 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 	return m.recorder
 }
 
-// CreateInvitation mocks base method.
-func (m *MockUserRepository) CreateInvitation(arg0 context.Context, arg1, arg2 string) (*model.UserInvitation, error) {
+// CheckIsInvitationExists mocks base method.
+func (m *MockUserRepository) CheckIsInvitationExists(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateInvitation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*model.UserInvitation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "CheckIsInvitationExists", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CheckIsInvitationExists indicates an expected call of CheckIsInvitationExists.
+func (mr *MockUserRepositoryMockRecorder) CheckIsInvitationExists(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckIsInvitationExists", reflect.TypeOf((*MockUserRepository)(nil).CheckIsInvitationExists), arg0, arg1)
+}
+
+// CreateInvitation mocks base method.
+func (m *MockUserRepository) CreateInvitation(arg0 context.Context, arg1 *model.UserInvitation) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateInvitation", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // CreateInvitation indicates an expected call of CreateInvitation.
-func (mr *MockUserRepositoryMockRecorder) CreateInvitation(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) CreateInvitation(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockUserRepository)(nil).CreateInvitation), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockUserRepository)(nil).CreateInvitation), arg0, arg1)
 }
 
 // GetUserByEmail mocks base method.
@@ -93,4 +106,18 @@ func (m *MockUserRepository) IsEmailAlreadyInvited(arg0 context.Context, arg1 st
 func (mr *MockUserRepositoryMockRecorder) IsEmailAlreadyInvited(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsEmailAlreadyInvited", reflect.TypeOf((*MockUserRepository)(nil).IsEmailAlreadyInvited), arg0, arg1)
+}
+
+// MarkInvitationStatus mocks base method.
+func (m *MockUserRepository) MarkInvitationStatus(arg0 context.Context, arg1 *model.UserInvitation, arg2 model.InvitationStatus) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MarkInvitationStatus", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MarkInvitationStatus indicates an expected call of MarkInvitationStatus.
+func (mr *MockUserRepositoryMockRecorder) MarkInvitationStatus(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkInvitationStatus", reflect.TypeOf((*MockUserRepository)(nil).MarkInvitationStatus), arg0, arg1, arg2)
 }
