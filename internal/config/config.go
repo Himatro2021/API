@@ -76,3 +76,13 @@ func IvKey() string {
 
 	return key
 }
+
+// MailServiceURL return mail service url
+func MailServiceURL() string {
+	return os.Getenv("MAIL_SERVICE_URL")
+}
+
+// UserInvitationBaseURL return user invitation base url
+func UserInvitationBaseURL() string {
+	return os.Getenv("USER_INVITATION_BASE_URL")
+}

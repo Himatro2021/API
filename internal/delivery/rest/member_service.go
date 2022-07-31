@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Himatro2021/API/internal/model"
 	"github.com/Himatro2021/API/internal/usecase"
@@ -12,9 +13,9 @@ import (
 
 func (s *Service) handleCreateMemberInvitation() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		request := model.UserInvitationInput{}
+		request := &model.UserInvitationInput{}
 
-		if err := ctx.Bind(&request); err != nil {
+		if err := ctx.Bind(request); err != nil {
 			return ErrBadRequest
 		}
 
@@ -30,6 +31,34 @@ func (s *Service) handleCreateMemberInvitation() echo.HandlerFunc {
 				"payload": utils.Dump(request),
 			})
 			return ErrInternal
+		}
+	}
+}
+
+func (s *Service) handleCheckInvitation() echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		param := ctx.Param("invitation_code")
+		if param == "" {
+			return ErrBadRequest
+		}
+
+		_, err := strconv.Atoi(param)
+		if err != nil {
+			return ErrBadRequest
+		}
+
+		err = s.userUsecase.CheckIsInvitationExists(ctx.Request().Context(), param)
+		switch err {
+		default:
+			logrus.WithFields(logrus.Fields{
+				"ctx":             utils.DumpIncomingContext(ctx.Request().Context()),
+				"invitation_code": param,
+			})
+			return ErrInternal
+		case usecase.ErrNotFound:
+			return ErrNotFound
+		case nil:
+			return ctx.NoContent(http.StatusOK)
 		}
 	}
 }

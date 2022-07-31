@@ -7,6 +7,7 @@ import (
 	"github.com/Himatro2021/API/internal/config"
 	"github.com/Himatro2021/API/internal/db"
 	"github.com/Himatro2021/API/internal/delivery/rest"
+	"github.com/Himatro2021/API/internal/external/mailer"
 	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/repository"
 	"github.com/Himatro2021/API/internal/usecase"
@@ -42,7 +43,8 @@ func InitServer(_ *cobra.Command, _ []string) {
 	sessionRepo := repository.NewSessionRepository(db.PostgresDB)
 
 	userRepo := repository.NewUserRepository(db.PostgresDB)
-	userUsecase := usecase.NewUserUsecase(userRepo)
+	mailer := mailer.NewMailer(userRepo)
+	userUsecase := usecase.NewUserUsecase(userRepo, mailer)
 
 	absentRepo := repository.NewAbsentRepository(db.PostgresDB)
 	absentUsecase := usecase.NewAbsentUsecase(absentRepo)
