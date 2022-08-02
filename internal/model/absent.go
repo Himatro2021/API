@@ -177,3 +177,19 @@ type AbsentResult struct {
 	FinishedAt   time.Time     `json:"finished_at" gorm:"column:finished_at"`
 	Participants []Participant `json:"participants"`
 }
+
+// CacheKeyByFormID generate cache key for absent result cache based on it's formID
+func (r AbsentResult) CacheKeyByFormID(id int64) string {
+	return fmt.Sprintf("%s:%d", "absent_result", id)
+}
+
+// GetFormIDByCacheKey split chache key and get the formID from the key
+func (r AbsentResult) GetFormIDByCacheKey(cacheKey string) (int64, error) {
+	elems := strings.Split(cacheKey, ":")
+	return strconv.ParseInt(elems[1], 10, 64)
+}
+
+// GetCacheExpiry return cache expiry when storing absent result in cache
+func (r AbsentResult) GetCacheExpiry() time.Duration {
+	return time.Minute * 15
+}
