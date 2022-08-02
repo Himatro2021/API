@@ -31,13 +31,16 @@ internal/model/mock/mock_auth_usecase.go:
 	mockgen -destination=internal/model/mock/mock_auth_usecase.go -package=mock github.com/Himatro2021/API/internal/model AuthUsecase
 internal/model/mock/mock_session_repository.go:
 	mockgen -destination=internal/model/mock/mock_session_repository.go -package=mock github.com/Himatro2021/API/internal/model SessionRepository
+internal/model/mock/mock_cacher.go:
+	mockgen -destination=internal/model/mock/mock_cacher.go -package mock github.com/Himatro2021/API/internal/model Cacher
 
 mockgen: internal/model/mock/mock_session_repository.go \
 	internal/model/mock/mock_user_usecase.go \
 	internal/model/mock/mock_user_repository.go \
 	internal/model/mock/mock_absent_usecase.go \
 	internal/model/mock/mock_absent_repository.go \
-	internal/model/mock/mock_auth_usecase.go
+	internal/model/mock/mock_auth_usecase.go \
+	internal/model/mock/mock_cacher.go
 
 clean:
 	rm -v internal/model/mock/mock_*.go
