@@ -2,6 +2,9 @@ package model
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"gopkg.in/guregu/null.v4"
@@ -47,10 +50,13 @@ type AbsentRepository interface {
 	GetParticipantsByFormID(ctx context.Context, id int64) ([]Participant, error)
 	GetAbsentListByID(ctx context.Context, formID, absentListID int64) (*AbsentList, error)
 	GetAbsentListByCreatorID(ctx context.Context, formID, creatorID int64) (*AbsentList, error)
+	GetAbsentResultFromCache(ctx context.Context, cacheKey string) (*AbsentResult, error)
 	CreateAbsentForm(ctx context.Context, title string, start, finish time.Time, groupID, userID int64) (*AbsentForm, error)
 	FillAbsentFormByAttendee(ctx context.Context, userID, formID int64, status Status, reason string) (*AbsentList, error)
 	UpdateAbsentForm(ctx context.Context, absentFormID int64, title string, start, finish time.Time, groupID, userID int64) (*AbsentForm, error)
 	UpdateAbsentListByAttendee(ctx context.Context, absentList *AbsentList) (*AbsentList, error)
+	UpdateParticipantsInAbsentResultCache(ctx context.Context, cacheKey string) error
+	SetAbsentResultToCache(ctx context.Context, result *AbsentResult, formID int64) error
 }
 
 // AbsentForm :nodoc:
