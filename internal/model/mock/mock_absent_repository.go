@@ -111,6 +111,21 @@ func (mr *MockAbsentRepositoryMockRecorder) GetAbsentListByID(arg0, arg1, arg2 i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAbsentListByID", reflect.TypeOf((*MockAbsentRepository)(nil).GetAbsentListByID), arg0, arg1, arg2)
 }
 
+// GetAbsentResultFromCache mocks base method.
+func (m *MockAbsentRepository) GetAbsentResultFromCache(arg0 context.Context, arg1 string) (*model.AbsentResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAbsentResultFromCache", arg0, arg1)
+	ret0, _ := ret[0].(*model.AbsentResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAbsentResultFromCache indicates an expected call of GetAbsentResultFromCache.
+func (mr *MockAbsentRepositoryMockRecorder) GetAbsentResultFromCache(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAbsentResultFromCache", reflect.TypeOf((*MockAbsentRepository)(nil).GetAbsentResultFromCache), arg0, arg1)
+}
+
 // GetAllAbsentForm mocks base method.
 func (m *MockAbsentRepository) GetAllAbsentForm(arg0 context.Context, arg1, arg2 int) ([]model.AbsentForm, error) {
 	m.ctrl.T.Helper()
@@ -141,6 +156,20 @@ func (mr *MockAbsentRepositoryMockRecorder) GetParticipantsByFormID(arg0, arg1 i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipantsByFormID", reflect.TypeOf((*MockAbsentRepository)(nil).GetParticipantsByFormID), arg0, arg1)
 }
 
+// SetAbsentResultToCache mocks base method.
+func (m *MockAbsentRepository) SetAbsentResultToCache(arg0 context.Context, arg1 *model.AbsentResult, arg2 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetAbsentResultToCache", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetAbsentResultToCache indicates an expected call of SetAbsentResultToCache.
+func (mr *MockAbsentRepositoryMockRecorder) SetAbsentResultToCache(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAbsentResultToCache", reflect.TypeOf((*MockAbsentRepository)(nil).SetAbsentResultToCache), arg0, arg1, arg2)
+}
+
 // UpdateAbsentForm mocks base method.
 func (m *MockAbsentRepository) UpdateAbsentForm(arg0 context.Context, arg1 int64, arg2 string, arg3, arg4 time.Time, arg5, arg6 int64) (*model.AbsentForm, error) {
 	m.ctrl.T.Helper()
@@ -169,4 +198,18 @@ func (m *MockAbsentRepository) UpdateAbsentListByAttendee(arg0 context.Context, 
 func (mr *MockAbsentRepositoryMockRecorder) UpdateAbsentListByAttendee(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAbsentListByAttendee", reflect.TypeOf((*MockAbsentRepository)(nil).UpdateAbsentListByAttendee), arg0, arg1)
+}
+
+// UpdateParticipantsInAbsentResultCache mocks base method.
+func (m *MockAbsentRepository) UpdateParticipantsInAbsentResultCache(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateParticipantsInAbsentResultCache", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateParticipantsInAbsentResultCache indicates an expected call of UpdateParticipantsInAbsentResultCache.
+func (mr *MockAbsentRepositoryMockRecorder) UpdateParticipantsInAbsentResultCache(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateParticipantsInAbsentResultCache", reflect.TypeOf((*MockAbsentRepository)(nil).UpdateParticipantsInAbsentResultCache), arg0, arg1)
 }
