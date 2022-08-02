@@ -2,12 +2,17 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/Himatro2021/API/internal/db"
 	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/model"
+	"github.com/alicebob/miniredis"
+	"github.com/go-redis/redis/v9"
 	"github.com/kumparan/go-utils"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -359,4 +364,202 @@ func TestAbsentRepository_GetParticipantsByFormID(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, []model.Participant{}, result)
 	})
+}
+
+func TestAbsentRepository_GetAbsentResultFromCache(t *testing.T) {
+	ctx := context.TODO()
+	mr, err := miniredis.Run()
+	assert.NoError(t, err)
+
+	client := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+	cacher := db.NewCacher(client)
+	repo := absentRepository{
+		cacher: cacher,
+	}
+
+	absentResult := &model.AbsentResult{
+		Title:      "test doang",
+		StartAt:    time.Now().Add(-1 * time.Hour),
+		FinishedAt: time.Now().Add(1 * time.Hour),
+		Participants: []model.Participant{
+			{
+				Name:   "lucky test",
+				Status: model.Present,
+				Reason: "",
+			},
+		},
+	}
+	absentResultByte, err := json.Marshal(absentResult)
+	cacheKey := model.AbsentResult.CacheKeyByFormID(model.AbsentResult{}, utils.GenerateID())
+	assert.NoError(t, err)
+
+	t.Run("ok - found", func(t *testing.T) {
+		err := cacher.Set(ctx, cacheKey, string(absentResultByte), time.Second*100)
+		assert.NoError(t, err)
+
+		response, err := repo.GetAbsentResultFromCache(ctx, cacheKey)
+		assert.NoError(t, err)
+		assert.Equal(t, absentResult.Title, response.Title)
+
+		mr.FlushDB()
+	})
+
+	t.Run("ok - cache not found", func(t *testing.T) {
+		_, err := repo.GetAbsentResultFromCache(ctx, cacheKey)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotFound)
+	})
+
+	// close redis to simulate redis error
+	mr.Close()
+
+	t.Run("err - redis error", func(t *testing.T) {
+		_, err := repo.GetAbsentResultFromCache(ctx, cacheKey)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestAbsentRepo_SetAbsentResultToCache(t *testing.T) {
+	ctx := context.TODO()
+	mr, err := miniredis.Run()
+	assert.NoError(t, err)
+
+	client := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+	cacher := db.NewCacher(client)
+	repo := absentRepository{
+		cacher: cacher,
+	}
+
+	absentResult := &model.AbsentResult{
+		Title:      "test doang",
+		StartAt:    time.Now().Add(-1 * time.Hour),
+		FinishedAt: time.Now().Add(1 * time.Hour),
+		Participants: []model.Participant{
+			{
+				Name:   "lucky test",
+				Status: model.Present,
+				Reason: "",
+			},
+		},
+	}
+	absentResultByte, err := json.Marshal(absentResult)
+	assert.NoError(t, err)
+	formID := utils.GenerateID()
+	cacheKey := model.AbsentResult.CacheKeyByFormID(model.AbsentResult{}, formID)
+
+	t.Run("ok - set to cache", func(t *testing.T) {
+		err := repo.SetAbsentResultToCache(ctx, absentResult, formID)
+		assert.NoError(t, err)
+
+		resp, err := mr.Get(cacheKey)
+
+		assert.NoError(t, err)
+		assert.Equal(t, resp, string(absentResultByte))
+
+		mr.FlushDB()
+	})
+
+	t.Run("redis error", func(t *testing.T) {
+		mr.Close()
+
+		err := repo.SetAbsentResultToCache(ctx, absentResult, formID)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestAbsentRepo_UpdateParticipantsInAbsentResultCache(t *testing.T) {
+	kit := initializeRepoTestKit(t)
+	mock := kit.dbmock
+
+	ctx := context.TODO()
+	mr, err := miniredis.Run()
+	assert.NoError(t, err)
+
+	client := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+	cacher := db.NewCacher(client)
+	repo := absentRepository{
+		cacher: cacher,
+		db:     kit.db,
+	}
+
+	absentResult := &model.AbsentResult{
+		Title:      "test doang",
+		StartAt:    time.Now().Add(-1 * time.Hour),
+		FinishedAt: time.Now().Add(1 * time.Hour),
+		Participants: []model.Participant{
+			{
+				Name:   "lucky test",
+				Status: model.Present,
+				Reason: "",
+			},
+		},
+	}
+
+	absentResultByte, err := json.Marshal(absentResult)
+	assert.NoError(t, err)
+	formID := utils.GenerateID()
+	cacheKey := model.AbsentResult.CacheKeyByFormID(model.AbsentResult{}, formID)
+
+	t.Run("ok - updated", func(t *testing.T) {
+		err := mr.Set(cacheKey, string(absentResultByte))
+		assert.NoError(t, err)
+		defer mr.FlushDB()
+
+		mock.ExpectQuery(`^select .+ from absent_lists al inner join users u ON u.id = al.created_by where al.absent_form_id`).
+			WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow("lucky").AddRow("lucky"))
+
+		err = repo.UpdateParticipantsInAbsentResultCache(ctx, cacheKey)
+		assert.NoError(t, err)
+
+		resp, err := mr.Get(cacheKey)
+		assert.NoError(t, err)
+
+		result := &model.AbsentResult{}
+		err = json.Unmarshal([]byte(resp), result)
+		assert.NoError(t, err)
+
+		assert.Equal(t, len(result.Participants), 2)
+	})
+
+	t.Run("ok - cache not found", func(t *testing.T) {
+		err := repo.UpdateParticipantsInAbsentResultCache(ctx, cacheKey)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotFound)
+	})
+
+	t.Run("err - redis err", func(t *testing.T) {
+		mr.Close()
+
+		err := repo.UpdateParticipantsInAbsentResultCache(ctx, cacheKey)
+
+		assert.Error(t, err)
+	})
+
+	err = mr.Restart()
+	assert.NoError(t, err)
+
+	t.Run("err - db err when getting participants", func(t *testing.T) {
+		err := mr.Set(cacheKey, string(absentResultByte))
+		assert.NoError(t, err)
+		defer mr.FlushDB()
+
+		mock.ExpectQuery(`^select .+ from absent_lists al inner join users u ON u.id = al.created_by where al.absent_form_id`).
+			WillReturnError(errors.New("err db"))
+
+		err = repo.UpdateParticipantsInAbsentResultCache(ctx, cacheKey)
+
+		assert.Error(t, err)
+	})
+
+	// TODO how to simulate error when setting new participants info in the cache?
 }

@@ -2,23 +2,27 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/Himatro2021/API/internal/model"
+	"github.com/go-redis/redis/v9"
 	"github.com/kumparan/go-utils"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type absentRepository struct {
-	db *gorm.DB
+	db     *gorm.DB
+	cacher model.Cacher
 }
 
 // NewAbsentRepository create instance for absent repository
-func NewAbsentRepository(db *gorm.DB) model.AbsentRepository {
+func NewAbsentRepository(db *gorm.DB, cacher model.Cacher) model.AbsentRepository {
 	return &absentRepository{
-		db: db,
+		db:     db,
+		cacher: cacher,
 	}
 }
 
@@ -256,4 +260,93 @@ func (r *absentRepository) UpdateAbsentListByAttendee(ctx context.Context, absen
 	}
 
 	return absentList, nil
+}
+
+func (r *absentRepository) GetAbsentResultFromCache(ctx context.Context, cacheKey string) (*model.AbsentResult, error) {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":      utils.DumpIncomingContext(ctx),
+		"cacheKey": cacheKey,
+	})
+
+	res, err := r.cacher.Get(ctx, cacheKey)
+	switch err {
+	default:
+		logger.Error(err)
+		return nil, err
+	case redis.Nil:
+		return nil, ErrNotFound
+	case nil:
+		break
+	}
+
+	absentResult := &model.AbsentResult{}
+
+	err = json.Unmarshal([]byte(res), absentResult)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return absentResult, nil
+}
+
+func (r *absentRepository) SetAbsentResultToCache(ctx context.Context, result *model.AbsentResult, formID int64) error {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":    utils.DumpIncomingContext(ctx),
+		"result": utils.Dump(result),
+	})
+
+	val, err := json.Marshal(result)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	err = r.cacher.Set(ctx, result.CacheKeyByFormID(formID), string(val), result.GetCacheExpiry())
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *absentRepository) UpdateParticipantsInAbsentResultCache(ctx context.Context, cacheKey string) error {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":      utils.DumpIncomingContext(ctx),
+		"cacheKey": cacheKey,
+	})
+
+	absentResult, err := r.GetAbsentResultFromCache(ctx, cacheKey)
+	switch err {
+	default:
+		logger.Error(err)
+		return err
+	case ErrNotFound:
+		return ErrNotFound
+	case nil:
+		break
+	}
+
+	formID, err := absentResult.GetFormIDByCacheKey(cacheKey)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	participants, err := r.GetParticipantsByFormID(ctx, formID)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	// overide Participancts value with the new one from db
+	absentResult.Participants = participants
+
+	if err := r.SetAbsentResultToCache(ctx, absentResult, formID); err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
 }
