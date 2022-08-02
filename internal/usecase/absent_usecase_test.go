@@ -299,12 +299,14 @@ func TestAbsentUsecase_FillAbsentFormByAttendee(t *testing.T) {
 		ID:           utils.GenerateID(),
 		AbsentFormID: formID,
 	}
+	cacheKey := model.AbsentResult.CacheKeyByFormID(model.AbsentResult{}, formID)
 
 	t.Run("ok - filled", func(t *testing.T) {
 		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(absentForm, nil)
 		// TODO use ctx based to get user id
 		repo.EXPECT().GetAbsentListByCreatorID(ctx, formID, member.ID).Times(1).Return(nil, repository.ErrNotFound)
-		repo.EXPECT().FillAbsentFormByAttendee(ctx, member.ID, formID, statusPresent, reason).Return(absentList, nil)
+		repo.EXPECT().FillAbsentFormByAttendee(ctx, member.ID, formID, statusPresent, reason).Times(1).Return(absentList, nil)
+		repo.EXPECT().UpdateParticipantsInAbsentResultCache(ctx, cacheKey).Times(1).Return(nil)
 
 		result, err := uc.FillAbsentFormByAttendee(ctx, formID, status, reason)
 
@@ -398,6 +400,19 @@ func TestAbsentUsecase_FillAbsentFormByAttendee(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrForbidden)
 	})
+
+	t.Run("err - err when updating absent result but still continue", func(t *testing.T) {
+		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(absentForm, nil)
+		// TODO use ctx based to get user id
+		repo.EXPECT().GetAbsentListByCreatorID(ctx, formID, member.ID).Times(1).Return(nil, repository.ErrNotFound)
+		repo.EXPECT().FillAbsentFormByAttendee(ctx, member.ID, formID, statusPresent, reason).Times(1).Return(absentList, nil)
+		repo.EXPECT().UpdateParticipantsInAbsentResultCache(ctx, cacheKey).Times(1).Return(nil)
+
+		result, err := uc.FillAbsentFormByAttendee(ctx, formID, status, reason)
+
+		assert.NoError(t, err)
+		assert.Equal(t, result.AbsentFormID, formID)
+	})
 }
 
 func TestAbsentUsecase_UpdateAbsentListByAttendee(t *testing.T) {
@@ -438,11 +453,13 @@ func TestAbsentUsecase_UpdateAbsentListByAttendee(t *testing.T) {
 		Status:       status,
 		Reason:       reason,
 	}
+	cacheKey := model.AbsentResult.CacheKeyByFormID(model.AbsentResult{}, formID)
 
 	t.Run("ok - updated", func(t *testing.T) {
 		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(absentForm, nil)
 		repo.EXPECT().GetAbsentListByID(ctx, formID, absentList.ID).Times(1).Return(absentList, nil)
 		repo.EXPECT().UpdateAbsentListByAttendee(ctx, absentList).Times(1).Return(absentList, nil)
+		repo.EXPECT().UpdateParticipantsInAbsentResultCache(ctx, cacheKey).Times(1).Return(nil)
 
 		result, err := uc.UpdateAbsentListByAttendee(ctx, absentList.ID, updateAbsentListInput)
 
@@ -579,6 +596,19 @@ func TestAbsentUsecase_UpdateAbsentListByAttendee(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrForbidden)
+	})
+
+	t.Run("err - redis err when updating absent result but still continue", func(t *testing.T) {
+		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(absentForm, nil)
+		repo.EXPECT().GetAbsentListByID(ctx, formID, absentList.ID).Times(1).Return(absentList, nil)
+		repo.EXPECT().UpdateAbsentListByAttendee(ctx, absentList).Times(1).Return(absentList, nil)
+		repo.EXPECT().UpdateParticipantsInAbsentResultCache(ctx, cacheKey).Times(1).Return(errors.New("err db"))
+
+		result, err := uc.UpdateAbsentListByAttendee(ctx, absentList.ID, updateAbsentListInput)
+
+		assert.NoError(t, err)
+		assert.Equal(t, result.ID, absentList.ID)
+		assert.Equal(t, result.CreatedBy, member.ID)
 	})
 }
 
@@ -724,16 +754,59 @@ func TestAbsentUsecase_GetAbsentResultByFormID(t *testing.T) {
 		ID: formID,
 	}
 
-	t.Run("ok", func(t *testing.T) {
+	absentResult := &model.AbsentResult{
+		Participants: participants,
+	}
+
+	cacheKey := model.AbsentResult.CacheKeyByFormID(model.AbsentResult{}, formID)
+
+	t.Run("ok - cache is not set yet", func(t *testing.T) {
+		repo.EXPECT().GetAbsentResultFromCache(ctx, cacheKey).Times(1).Return(nil, repository.ErrNotFound)
 		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(absentForm, nil)
 		repo.EXPECT().GetParticipantsByFormID(ctx, formID).Times(1).Return(participants, nil)
+		repo.EXPECT().SetAbsentResultToCache(ctx, absentResult, formID).Times(1).Return(nil)
 
-		_, err := uc.GetAbsentResultByFormID(ctx, formID)
+		res, err := uc.GetAbsentResultByFormID(ctx, formID)
 
 		assert.NoError(t, err)
+		assert.Equal(t, absentResult, res)
 	})
 
-	t.Run("ok - form not found", func(t *testing.T) {
+	t.Run("ok - found from cache", func(t *testing.T) {
+		repo.EXPECT().GetAbsentResultFromCache(ctx, cacheKey).Times(1).Return(absentResult, nil)
+
+		res, err := uc.GetAbsentResultByFormID(ctx, formID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, absentResult, res)
+	})
+
+	t.Run("ok - cache err when get absent result but still continue", func(t *testing.T) {
+		repo.EXPECT().GetAbsentResultFromCache(ctx, cacheKey).Times(1).Return(nil, errors.New("cache err"))
+		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(absentForm, nil)
+		repo.EXPECT().GetParticipantsByFormID(ctx, formID).Times(1).Return(participants, nil)
+		repo.EXPECT().SetAbsentResultToCache(ctx, absentResult, formID).Times(1).Return(nil)
+
+		res, err := uc.GetAbsentResultByFormID(ctx, formID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, absentResult, res)
+	})
+
+	t.Run("ok - cache err when set absent result but still continue", func(t *testing.T) {
+		repo.EXPECT().GetAbsentResultFromCache(ctx, cacheKey).Times(1).Return(nil, repository.ErrNotFound)
+		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(absentForm, nil)
+		repo.EXPECT().GetParticipantsByFormID(ctx, formID).Times(1).Return(participants, nil)
+		repo.EXPECT().SetAbsentResultToCache(ctx, absentResult, formID).Times(1).Return(errors.New("cache err"))
+
+		res, err := uc.GetAbsentResultByFormID(ctx, formID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, absentResult, res)
+	})
+
+	t.Run("ok - form not found both in cache and db", func(t *testing.T) {
+		repo.EXPECT().GetAbsentResultFromCache(ctx, cacheKey).Times(1).Return(nil, repository.ErrNotFound)
 		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(nil, repository.ErrNotFound)
 
 		_, err := uc.GetAbsentResultByFormID(ctx, formID)
@@ -743,6 +816,7 @@ func TestAbsentUsecase_GetAbsentResultByFormID(t *testing.T) {
 	})
 
 	t.Run("err - db err when get absent form", func(t *testing.T) {
+		repo.EXPECT().GetAbsentResultFromCache(ctx, cacheKey).Times(1).Return(nil, repository.ErrNotFound)
 		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(nil, errors.New("err db"))
 
 		_, err := uc.GetAbsentResultByFormID(ctx, formID)
@@ -752,6 +826,7 @@ func TestAbsentUsecase_GetAbsentResultByFormID(t *testing.T) {
 	})
 
 	t.Run("err - db err when getting participants", func(t *testing.T) {
+		repo.EXPECT().GetAbsentResultFromCache(ctx, cacheKey).Times(1).Return(nil, repository.ErrNotFound)
 		repo.EXPECT().GetAbsentFormByID(ctx, formID).Times(1).Return(absentForm, nil)
 		repo.EXPECT().GetParticipantsByFormID(ctx, formID).Times(1).Return(nil, errors.New("err db"))
 

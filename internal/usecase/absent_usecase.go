@@ -54,6 +54,18 @@ func (au *absentUsecase) GetAbsentResultByFormID(ctx context.Context, id int64) 
 
 	absentResult := &model.AbsentResult{}
 
+	result, err := au.absentRepo.GetAbsentResultFromCache(ctx, absentResult.CacheKeyByFormID(id))
+	switch err {
+	default:
+		// if cache error, log the error and find in the db instead
+		logger.Error(err)
+	// if not found, find from db
+	case repository.ErrNotFound:
+		break
+	case nil:
+		return result, nil
+	}
+
 	form, err := au.absentRepo.GetAbsentFormByID(ctx, id)
 	switch err {
 	case nil:
@@ -76,6 +88,11 @@ func (au *absentUsecase) GetAbsentResultByFormID(ctx context.Context, id int64) 
 	}
 
 	absentResult.Participants = participants
+
+	// if err accoures when setting a cache, just log it
+	if err := au.absentRepo.SetAbsentResultToCache(ctx, absentResult, id); err != nil {
+		logger.Error(err)
+	}
 
 	return absentResult, nil
 }
@@ -204,6 +221,14 @@ func (au *absentUsecase) FillAbsentFormByAttendee(ctx context.Context, absentFor
 		return nil, ErrInternal
 	}
 
+	cacheKey := model.AbsentResult.CacheKeyByFormID(model.AbsentResult{}, absentFormID)
+	err = au.absentRepo.UpdateParticipantsInAbsentResultCache(ctx, cacheKey)
+
+	// if err happen when updating cache, just log and forget
+	if err != nil {
+		logger.Error(err)
+	}
+
 	return absentList, nil
 }
 
@@ -266,6 +291,12 @@ func (au *absentUsecase) UpdateAbsentListByAttendee(ctx context.Context, absentL
 	if err != nil {
 		logger.Error(err)
 		return nil, ErrInternal
+	}
+
+	cacheKey := model.AbsentResult.CacheKeyByFormID(model.AbsentResult{}, absentList.AbsentFormID)
+	err = au.absentRepo.UpdateParticipantsInAbsentResultCache(ctx, cacheKey)
+	if err != nil {
+		logger.Error(err)
 	}
 
 	return result, nil

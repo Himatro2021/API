@@ -2,6 +2,9 @@ package model
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"gopkg.in/guregu/null.v4"
@@ -47,10 +50,13 @@ type AbsentRepository interface {
 	GetParticipantsByFormID(ctx context.Context, id int64) ([]Participant, error)
 	GetAbsentListByID(ctx context.Context, formID, absentListID int64) (*AbsentList, error)
 	GetAbsentListByCreatorID(ctx context.Context, formID, creatorID int64) (*AbsentList, error)
+	GetAbsentResultFromCache(ctx context.Context, cacheKey string) (*AbsentResult, error)
 	CreateAbsentForm(ctx context.Context, title string, start, finish time.Time, groupID, userID int64) (*AbsentForm, error)
 	FillAbsentFormByAttendee(ctx context.Context, userID, formID int64, status Status, reason string) (*AbsentList, error)
 	UpdateAbsentForm(ctx context.Context, absentFormID int64, title string, start, finish time.Time, groupID, userID int64) (*AbsentForm, error)
 	UpdateAbsentListByAttendee(ctx context.Context, absentList *AbsentList) (*AbsentList, error)
+	UpdateParticipantsInAbsentResultCache(ctx context.Context, cacheKey string) error
+	SetAbsentResultToCache(ctx context.Context, result *AbsentResult, formID int64) error
 }
 
 // AbsentForm :nodoc:
@@ -176,4 +182,20 @@ type AbsentResult struct {
 	StartAt      time.Time     `json:"start_at" gorm:"column:start_at"`
 	FinishedAt   time.Time     `json:"finished_at" gorm:"column:finished_at"`
 	Participants []Participant `json:"participants"`
+}
+
+// CacheKeyByFormID generate cache key for absent result cache based on it's formID
+func (r AbsentResult) CacheKeyByFormID(id int64) string {
+	return fmt.Sprintf("%s:%d", "absent_result", id)
+}
+
+// GetFormIDByCacheKey split chache key and get the formID from the key
+func (r AbsentResult) GetFormIDByCacheKey(cacheKey string) (int64, error) {
+	elems := strings.Split(cacheKey, ":")
+	return strconv.ParseInt(elems[1], 10, 64)
+}
+
+// GetCacheExpiry return cache expiry when storing absent result in cache
+func (r AbsentResult) GetCacheExpiry() time.Duration {
+	return time.Minute * 15
 }

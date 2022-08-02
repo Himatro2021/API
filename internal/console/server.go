@@ -11,6 +11,7 @@ import (
 	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/repository"
 	"github.com/Himatro2021/API/internal/usecase"
+	"github.com/go-redis/redis/v9"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
@@ -37,8 +38,17 @@ func InitServer(_ *cobra.Command, _ []string) {
 	if err != nil {
 		logrus.Fatal("unable to start server. reason: ", err.Error())
 	}
-
 	defer helper.WrapCloser(sqlDB.Close)
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:         config.RedisAddr(),
+		Password:     config.RedisPassword(),
+		DB:           config.RedisCacheDB(),
+		DialTimeout:  config.RedisTimeout(),
+		MinIdleConns: config.RedisMinIdleConn(),
+		MaxIdleConns: config.RedisMaxIdleConn(),
+	})
+	cacher := db.NewCacher(redisClient)
 
 	sessionRepo := repository.NewSessionRepository(db.PostgresDB)
 
@@ -46,7 +56,7 @@ func InitServer(_ *cobra.Command, _ []string) {
 	mailer := mailer.NewMailer(userRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo, mailer)
 
-	absentRepo := repository.NewAbsentRepository(db.PostgresDB)
+	absentRepo := repository.NewAbsentRepository(db.PostgresDB, cacher)
 	absentUsecase := usecase.NewAbsentUsecase(absentRepo)
 
 	authUesecase := usecase.NewAuthUsecase(sessionRepo, userRepo)

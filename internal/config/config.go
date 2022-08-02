@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -85,4 +86,66 @@ func MailServiceURL() string {
 // UserInvitationBaseURL return user invitation base url
 func UserInvitationBaseURL() string {
 	return os.Getenv("USER_INVITATION_BASE_URL")
+}
+
+// RedisAddr return redis address
+func RedisAddr() string {
+	return os.Getenv("REDIS_ADDR")
+}
+
+// RedisPassword return redis password
+func RedisPassword() string {
+	return os.Getenv("REDIS_PASSWORD")
+}
+
+// RedisCacheDB return redis db
+func RedisCacheDB() int {
+	cfg := os.Getenv("REDIS_CACHE_DB")
+
+	db, err := strconv.Atoi(cfg)
+	if err != nil {
+		logrus.Warn("invalid redis db config. reason:", err.Error())
+		return 0
+	}
+
+	return db
+}
+
+// RedisTimeout represents the timeout value for the redis connection
+func RedisTimeout() time.Duration {
+	cfg := os.Getenv("REDIS_DIAL_TIMEOUT")
+
+	to, err := time.ParseDuration(cfg)
+	if err != nil {
+		logrus.Warn("invalid redis timeout config. reason:", err.Error())
+		return 5 * time.Second
+	}
+
+	return to
+}
+
+// RedisMinIdleConn return min idle connections for redis
+func RedisMinIdleConn() int {
+	cfg := os.Getenv("REDIS_MIN_IDLE")
+
+	min, err := strconv.Atoi(cfg)
+	if err != nil {
+		logrus.Warn("invalid redis idle conn config. reason:", err.Error())
+		return 1
+	}
+
+	return min
+}
+
+// RedisMaxIdleConn return max idle connections for redis
+func RedisMaxIdleConn() int {
+	cfg := os.Getenv("REDIS_MAX_IDLE")
+
+	max, err := strconv.Atoi(cfg)
+	if err != nil {
+		logrus.Warn("invalid redis idle conn config. reason:", err.Error())
+		return 5
+	}
+
+	return max
 }
