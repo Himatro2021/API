@@ -31,9 +31,10 @@ type InvitationStatus string
 
 // Enum for InvitationStatus type
 var (
-	InvitationStatusSent    InvitationStatus = "SENT"
-	InvitationStatusPending InvitationStatus = "PENDING"
-	InvitationStatusFailed  InvitationStatus = "FAILED"
+	InvitationStatusCompleted InvitationStatus = "COMPLETED"
+	InvitationStatusSent      InvitationStatus = "SENT"
+	InvitationStatusPending   InvitationStatus = "PENDING"
+	InvitationStatusFailed    InvitationStatus = "FAILED"
 )
 
 // UserInvitation :nodoc:
@@ -134,12 +135,65 @@ func (u *User) GetRole() rbac.Role {
 	return u.Role
 }
 
+// Encrypt encrypt user data. For password, you should set it in plain value
+// because it will always being hashed by this function
+func (u *User) Encrypt() error {
+	cryptor := helper.Cryptor()
+
+	name, err := cryptor.Encrypt(u.Name)
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	email, err := cryptor.Encrypt(u.Email)
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	password, err := helper.HashString(u.Password)
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	u.Name = name
+	u.Email = email
+	u.Password = password
+
+	return nil
+}
+
+// Decrypt decrypt user data, unless the password. it's hashed and should never be reversed
+func (u *User) Decrypt() error {
+	cryptor := helper.Cryptor()
+
+	name, err := cryptor.Decrypt(u.Name)
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	email, err := cryptor.Decrypt(u.Email)
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	u.Name = name
+	u.Email = email
+
+	return nil
+}
+
 // RegistrationInput represent registration input
 type RegistrationInput struct {
 	Email                string `json:"email" validate:"required,email"`
 	Name                 string `json:"name" validate:"required"`
 	Password             string `json:"password" validate:"required,min=8,eqfield=PasswordConfirmation"`
 	PasswordConfirmation string `json:"password_confirmation" validate:"required,min=8,eqfield=Password"`
+	InvitationCode       string `json:"invitation_code" validate:"required"`
 }
 
 // Validate validate registration input
@@ -151,6 +205,7 @@ func (r *RegistrationInput) Validate() error {
 type UserUsecase interface {
 	CreateInvitation(ctx context.Context, input *UserInvitationInput) (*UserInvitation, error)
 	CheckIsInvitationExists(ctx context.Context, invitationCode string) error
+	Register(ctx context.Context, input *RegistrationInput) (*User, error)
 }
 
 // UserRepository :nodoc:
@@ -160,5 +215,7 @@ type UserRepository interface {
 	IsEmailAlreadyInvited(ctx context.Context, email string) (bool, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id int64) (*User, error)
+	GetUserInvitationByInvitationCode(ctx context.Context, code string) (*UserInvitation, error)
 	MarkInvitationStatus(ctx context.Context, invitation *UserInvitation, status InvitationStatus) error
+	Register(ctx context.Context, user *User) error
 }

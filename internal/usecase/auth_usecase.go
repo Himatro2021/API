@@ -34,7 +34,13 @@ func (au *authUsecase) LoginByEmailAndPassword(ctx context.Context, email, plain
 		"email": email,
 	})
 
-	user, err := au.userRepo.GetUserByEmail(ctx, email)
+	encEmail, err := helper.Cryptor().Encrypt(email)
+	if err != nil {
+		logger.Error(err)
+		return nil, ErrInternal
+	}
+
+	user, err := au.userRepo.GetUserByEmail(ctx, encEmail)
 	switch err {
 	case nil:
 		break

@@ -99,6 +99,26 @@ func (r *userRepository) GetUserByID(ctx context.Context, id int64) (*model.User
 	}
 }
 
+// GetUserInvitationByInvitationCode find invitation from given invitation code
+func (r *userRepository) GetUserInvitationByInvitationCode(ctx context.Context, code string) (*model.UserInvitation, error) {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":  utils.DumpIncomingContext(ctx),
+		"code": code,
+	})
+
+	userInvitation := &model.UserInvitation{}
+	err := r.db.WithContext(ctx).Model(&model.UserInvitation{}).Where("invitation_code = ?", code).Take(&userInvitation).Error
+	switch err {
+	default:
+		logger.Error(err)
+		return nil, err
+	case gorm.ErrRecordNotFound:
+		return nil, ErrNotFound
+	case nil:
+		return userInvitation, nil
+	}
+}
+
 // MarkInvitationStatus set invitation status to given model.InvitationStatus. This doesn't check if
 // the invitation is exists or not in the first place
 func (r *userRepository) MarkInvitationStatus(ctx context.Context, invitation *model.UserInvitation, status model.InvitationStatus) error {
@@ -136,4 +156,20 @@ func (r *userRepository) CheckIsInvitationExists(ctx context.Context, invitation
 	case nil:
 		return nil
 	}
+}
+
+// Register create a new user
+func (r *userRepository) Register(ctx context.Context, user *model.User) error {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":  utils.DumpIncomingContext(ctx),
+		"user": utils.Dump(user),
+	})
+
+	err := r.db.WithContext(ctx).Create(user).Error
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
 }

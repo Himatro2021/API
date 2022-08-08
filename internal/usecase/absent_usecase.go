@@ -107,6 +107,7 @@ func (au *absentUsecase) GetAllAbsentForm(ctx context.Context, limit, offset int
 	})
 
 	user := auth.GetUserFromCtx(ctx)
+	logger.Info(user)
 	if !user.HasAccess(rbac.ResourceAbsentForm, rbac.ActionReadAll) {
 		return []model.AbsentForm{}, ErrForbidden
 	}
