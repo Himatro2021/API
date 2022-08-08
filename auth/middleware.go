@@ -64,7 +64,8 @@ func (am *Middleware) UserSessionMiddleware() echo.MiddlewareFunc {
 	}
 }
 
-// RejectUnauthorizedRequest if no user in context, return unauthorized error. otherwise pass
+// RejectUnauthorizedRequest if no user in context, return unauthorized error. value in params
+// must be a valid url. Any url match in this array, will allow non authorized requests
 func (am *Middleware) RejectUnauthorizedRequest(skipURL []string) echo.MiddlewareFunc {
 	return func(hf echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
