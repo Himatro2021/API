@@ -37,7 +37,9 @@ func (s *Service) initAuthHandlerRoutes() {
 
 func (s *Service) initMemberHandlerRoutes() {
 	s.group.GET("/members/invitation/:invitation_code/", s.handleCheckInvitation())
+
 	s.group.POST("/members/invitations/", s.handleCreateMemberInvitation())
+	s.group.POST("/members/register/", s.handleRegistration())
 }
 
 func (s *Service) initAbsentHandlerRoutes() {
