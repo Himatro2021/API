@@ -168,3 +168,216 @@ func TestUserUsecase_CheckIsInvitationExists(t *testing.T) {
 		assert.Error(t, err, ErrInternal)
 	})
 }
+
+func TestUserUsecase_Register(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	_ = os.Setenv("PRIVATE_KEY", "supersecret")
+	_ = os.Setenv("IV_KEY", "4e6064d3814c2cd22c550155655fefc6")
+
+	ctx := context.TODO()
+	repo := mock.NewMockUserRepository(ctrl)
+	uc := userUsecase{
+		userRepo: repo,
+	}
+
+	// user := &model.User{
+	// 	ID:    utils.GenerateID(),
+	// 	Email: input.Email,
+	// }
+
+	t.Run("ok - registered", func(t *testing.T) {
+		input := &model.RegistrationInput{
+			Email:                "email@mail.com",
+			Name:                 "lucky",
+			Password:             "password",
+			PasswordConfirmation: "password",
+			InvitationCode:       "testonly",
+		}
+		invitation := &model.UserInvitation{
+			ID:             utils.GenerateID(),
+			Email:          input.Email,
+			InvitationCode: input.InvitationCode,
+		}
+
+		err := invitation.Encrypt()
+		assert.NoError(t, err)
+
+		repo.EXPECT().GetUserInvitationByInvitationCode(ctx, invitation.InvitationCode).Times(1).Return(invitation, nil)
+		repo.EXPECT().Register(ctx, gomock.Any()).Times(1).Return(nil)
+		repo.EXPECT().MarkInvitationStatus(ctx, invitation, model.InvitationStatusCompleted).Return(nil)
+
+		_, err = uc.Register(ctx, input)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("ok - input invalid", func(t *testing.T) {
+		invalidInput := &model.RegistrationInput{
+			Email:                "email@mail.com",
+			Name:                 "lucky",
+			Password:             "passwordnya",
+			PasswordConfirmation: "passwordmalahgasama",
+			InvitationCode:       "testonly",
+		}
+
+		_, err := uc.Register(ctx, invalidInput)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrValidation)
+	})
+
+	t.Run("ok - invitation not found", func(t *testing.T) {
+		input := &model.RegistrationInput{
+			Email:                "email@mail.com",
+			Name:                 "lucky",
+			Password:             "password",
+			PasswordConfirmation: "password",
+			InvitationCode:       "testonly",
+		}
+		invitation := &model.UserInvitation{
+			ID:             utils.GenerateID(),
+			Email:          input.Email,
+			InvitationCode: input.InvitationCode,
+		}
+
+		err := invitation.Encrypt()
+		assert.NoError(t, err)
+
+		repo.EXPECT().GetUserInvitationByInvitationCode(ctx, gomock.Any()).Times(1).Return(nil, repository.ErrNotFound)
+
+		_, err = uc.Register(ctx, input)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotFound)
+	})
+
+	t.Run("err -get user invitation return err", func(t *testing.T) {
+		input := &model.RegistrationInput{
+			Email:                "email@mail.com",
+			Name:                 "lucky",
+			Password:             "password",
+			PasswordConfirmation: "password",
+			InvitationCode:       "testonly",
+		}
+		invitation := &model.UserInvitation{
+			ID:             utils.GenerateID(),
+			Email:          input.Email,
+			InvitationCode: input.InvitationCode,
+		}
+
+		err := invitation.Encrypt()
+		assert.NoError(t, err)
+
+		repo.EXPECT().GetUserInvitationByInvitationCode(ctx, gomock.Any()).Times(1).Return(nil, errors.New("err db"))
+
+		_, err = uc.Register(ctx, input)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrInternal)
+	})
+
+	t.Run("ok - invitation email not match", func(t *testing.T) {
+		input := &model.RegistrationInput{
+			Email:                "email@mail.com",
+			Name:                 "lucky",
+			Password:             "password",
+			PasswordConfirmation: "password",
+			InvitationCode:       "testonly",
+		}
+		differentEmail := &model.UserInvitation{
+			ID:             utils.GenerateID(),
+			Email:          "different@mail.cre",
+			InvitationCode: input.InvitationCode,
+		}
+
+		err := differentEmail.Encrypt()
+		assert.NoError(t, err)
+
+		repo.EXPECT().GetUserInvitationByInvitationCode(ctx, gomock.Any()).Times(1).Return(differentEmail, nil)
+
+		_, err = uc.Register(ctx, input)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrForbidden)
+	})
+
+	t.Run("err - registration failed", func(t *testing.T) {
+		input := &model.RegistrationInput{
+			Email:                "email@mail.com",
+			Name:                 "lucky",
+			Password:             "password",
+			PasswordConfirmation: "password",
+			InvitationCode:       "testonly",
+		}
+		invitation := &model.UserInvitation{
+			ID:             utils.GenerateID(),
+			Email:          input.Email,
+			InvitationCode: input.InvitationCode,
+		}
+
+		err := invitation.Encrypt()
+		assert.NoError(t, err)
+
+		repo.EXPECT().GetUserInvitationByInvitationCode(ctx, gomock.Any()).Times(1).Return(invitation, nil)
+		repo.EXPECT().Register(ctx, gomock.Any()).Times(1).Return(errors.New("err db"))
+
+		_, err = uc.Register(ctx, input)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrInternal)
+	})
+
+	t.Run("ok - failed to update invitation status", func(t *testing.T) {
+		input := &model.RegistrationInput{
+			Email:                "email@mail.com",
+			Name:                 "lucky",
+			Password:             "password",
+			PasswordConfirmation: "password",
+			InvitationCode:       "testonly",
+		}
+		invitation := &model.UserInvitation{
+			ID:             utils.GenerateID(),
+			Email:          input.Email,
+			InvitationCode: input.InvitationCode,
+		}
+
+		err := invitation.Encrypt()
+		assert.NoError(t, err)
+
+		repo.EXPECT().GetUserInvitationByInvitationCode(ctx, invitation.InvitationCode).Times(1).Return(invitation, nil)
+		repo.EXPECT().Register(ctx, gomock.Any()).Times(1).Return(nil)
+		repo.EXPECT().MarkInvitationStatus(ctx, invitation, model.InvitationStatusCompleted).Return(errors.New("err db"))
+
+		_, err = uc.Register(ctx, input)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("ok - invitation is already completed", func(t *testing.T) {
+		input := &model.RegistrationInput{
+			Email:                "email@mail.com",
+			Name:                 "lucky",
+			Password:             "password",
+			PasswordConfirmation: "password",
+			InvitationCode:       "testonly",
+		}
+		invitation := &model.UserInvitation{
+			ID:             utils.GenerateID(),
+			Email:          input.Email,
+			InvitationCode: input.InvitationCode,
+			Status:         model.InvitationStatusCompleted,
+		}
+
+		err := invitation.Encrypt()
+		assert.NoError(t, err)
+
+		repo.EXPECT().GetUserInvitationByInvitationCode(ctx, gomock.Any()).Times(1).Return(invitation, nil)
+
+		_, err = uc.Register(ctx, input)
+
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrForbidden)
+	})
+}

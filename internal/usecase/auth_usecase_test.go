@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/Himatro2021/API/internal/helper"
@@ -18,6 +19,9 @@ func TestAuthUsecase_LoginByEmailAndPassword(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	_ = os.Setenv("PRIVATE_KEY", "supersecret")
+	_ = os.Setenv("IV_KEY", "4e6064d3814c2cd22c550155655fefc6")
+
 	ctx := context.TODO()
 	sessRepo := mock.NewMockSessionRepository(ctrl)
 	userRepo := mock.NewMockUserRepository(ctrl)
@@ -30,6 +34,9 @@ func TestAuthUsecase_LoginByEmailAndPassword(t *testing.T) {
 	pw := "ini password"
 	password, _ := helper.HashString(pw)
 
+	encEmail, err := helper.Cryptor().Encrypt(email)
+	assert.NoError(t, err)
+
 	user := &model.User{
 		ID:       utils.GenerateID(),
 		Email:    email,
@@ -37,7 +44,7 @@ func TestAuthUsecase_LoginByEmailAndPassword(t *testing.T) {
 	}
 
 	t.Run("ok", func(t *testing.T) {
-		userRepo.EXPECT().GetUserByEmail(ctx, email).Times(1).Return(user, nil)
+		userRepo.EXPECT().GetUserByEmail(ctx, encEmail).Times(1).Return(user, nil)
 		sessRepo.EXPECT().Create(ctx, gomock.Any()).Times(1).Return(nil)
 
 		_, err := uc.LoginByEmailAndPassword(ctx, email, pw)
@@ -46,7 +53,7 @@ func TestAuthUsecase_LoginByEmailAndPassword(t *testing.T) {
 	})
 
 	t.Run("ok - email not found", func(t *testing.T) {
-		userRepo.EXPECT().GetUserByEmail(ctx, email).Times(1).Return(nil, repository.ErrNotFound)
+		userRepo.EXPECT().GetUserByEmail(ctx, encEmail).Times(1).Return(nil, repository.ErrNotFound)
 
 		_, err := uc.LoginByEmailAndPassword(ctx, email, pw)
 
@@ -55,7 +62,7 @@ func TestAuthUsecase_LoginByEmailAndPassword(t *testing.T) {
 	})
 
 	t.Run("err - err get user by email", func(t *testing.T) {
-		userRepo.EXPECT().GetUserByEmail(ctx, email).Times(1).Return(nil, errors.New("err db"))
+		userRepo.EXPECT().GetUserByEmail(ctx, encEmail).Times(1).Return(nil, errors.New("err db"))
 
 		_, err := uc.LoginByEmailAndPassword(ctx, email, pw)
 
@@ -64,7 +71,7 @@ func TestAuthUsecase_LoginByEmailAndPassword(t *testing.T) {
 	})
 
 	t.Run("ok - password mismatch", func(t *testing.T) {
-		userRepo.EXPECT().GetUserByEmail(ctx, email).Times(1).Return(user, nil)
+		userRepo.EXPECT().GetUserByEmail(ctx, encEmail).Times(1).Return(user, nil)
 
 		_, err := uc.LoginByEmailAndPassword(ctx, email, "passwordnya salah")
 
@@ -73,7 +80,7 @@ func TestAuthUsecase_LoginByEmailAndPassword(t *testing.T) {
 	})
 
 	t.Run("err - err when creating session", func(t *testing.T) {
-		userRepo.EXPECT().GetUserByEmail(ctx, email).Times(1).Return(user, nil)
+		userRepo.EXPECT().GetUserByEmail(ctx, encEmail).Times(1).Return(user, nil)
 		sessRepo.EXPECT().Create(ctx, gomock.Any()).Times(1).Return(errors.New("err db"))
 
 		_, err := uc.LoginByEmailAndPassword(ctx, email, pw)

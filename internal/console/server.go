@@ -69,7 +69,10 @@ func InitServer(_ *cobra.Command, _ []string) {
 	HTTPServer.Use(middleware.Logger())
 	HTTPServer.Use(httpMiddleware.UserSessionMiddleware())
 
-	skipAuthRejectURL := []string{"/rest/auth/login/"}
+	skipAuthRejectURL := []string{
+		"/rest/auth/login/",
+		"/rest/members/register/",
+	}
 	HTTPServer.Use(httpMiddleware.RejectUnauthorizedRequest(skipAuthRejectURL))
 
 	RESTGroup := HTTPServer.Group("rest")

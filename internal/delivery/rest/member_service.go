@@ -25,11 +25,13 @@ func (s *Service) handleCreateMemberInvitation() echo.HandlerFunc {
 			return ctx.JSON(http.StatusOK, invitation)
 		case usecase.ErrValidation:
 			return ErrValidation
+		case usecase.ErrForbidden:
+			return ErrForbidden
 		default:
 			logrus.WithFields(logrus.Fields{
 				"ctx":     utils.DumpIncomingContext(ctx.Request().Context()),
 				"payload": utils.Dump(request),
-			})
+			}).Error(err)
 			return ErrInternal
 		}
 	}
@@ -53,12 +55,40 @@ func (s *Service) handleCheckInvitation() echo.HandlerFunc {
 			logrus.WithFields(logrus.Fields{
 				"ctx":             utils.DumpIncomingContext(ctx.Request().Context()),
 				"invitation_code": param,
-			})
+			}).Error(err)
 			return ErrInternal
 		case usecase.ErrNotFound:
 			return ErrNotFound
 		case nil:
 			return ctx.NoContent(http.StatusOK)
+		}
+	}
+}
+
+func (s *Service) handleRegistration() echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		request := &model.RegistrationInput{}
+
+		if err := ctx.Bind(request); err != nil {
+			return ErrBadRequest
+		}
+
+		user, err := s.userUsecase.Register(ctx.Request().Context(), request)
+		switch err {
+		default:
+			logrus.WithFields(logrus.Fields{
+				"ctx": utils.DumpIncomingContext(ctx.Request().Context()),
+				"req": utils.Dump(request),
+			}).Error(err)
+			return ErrInternal
+		case usecase.ErrValidation:
+			return ErrValidation
+		case usecase.ErrNotFound:
+			return ErrNotFound
+		case usecase.ErrForbidden:
+			return ErrForbidden
+		case nil:
+			return ctx.JSON(http.StatusOK, user)
 		}
 	}
 }

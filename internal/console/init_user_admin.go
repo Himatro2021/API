@@ -2,7 +2,6 @@ package console
 
 import (
 	"github.com/Himatro2021/API/internal/db"
-	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/model"
 	"github.com/Himatro2021/API/internal/rbac"
 	"github.com/go-playground/validator/v10"
@@ -48,21 +47,19 @@ func initAdmin(cmd *cobra.Command, args []string) {
 
 	fatalIfAdminAlreadyPresent()
 
-	hashed, err := helper.HashString(data.Password)
-	if err != nil {
-		logrus.Fatal(err.Error())
-	}
-
-	// TODO hash
 	user := &model.User{
 		ID:       utils.GenerateID(),
 		Name:     "Super Admin",
 		Email:    data.Email,
-		Password: hashed,
+		Password: data.Password,
 	}
 	user.SetRole(rbac.RoleAdmin)
 
-	err = db.PostgresDB.Model(&model.User{}).Create(user).Error
+	if err := user.Encrypt(); err != nil {
+		logrus.Fatal("encryption failed: ", err)
+	}
+
+	err := db.PostgresDB.Model(&model.User{}).Create(user).Error
 	if err != nil {
 		logrus.Fatal("unexpected error:", err.Error())
 	}

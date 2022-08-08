@@ -119,8 +119,86 @@ func (u *userUsecase) CheckIsInvitationExists(ctx context.Context, invitationCod
 	}
 }
 
-// HandleRegistrationByInvitation not implemented
-func (u *userUsecase) HandleRegistrationByInvitation(ctx context.Context, input *model.RegistrationInput) {
+// Register create a new user which only allowed if an invitation is exists
+func (u *userUsecase) Register(ctx context.Context, input *model.RegistrationInput) (*model.User, error) {
+	logger := logrus.WithFields(logrus.Fields{
+		"ctx":   utils.DumpIncomingContext(ctx),
+		"input": utils.Dump(input),
+	})
+
+	if err := input.Validate(); err != nil {
+		return nil, ErrValidation
+	}
+
+	code, err := helper.Cryptor().Encrypt(input.InvitationCode)
+	if err != nil {
+		logger.Error(err)
+		return nil, ErrInternal
+	}
+
+	invitation, err := u.userRepo.GetUserInvitationByInvitationCode(ctx, code)
+	switch err {
+	default:
+		logger.Error(err)
+		return nil, ErrInternal
+	case repository.ErrNotFound:
+		return nil, ErrNotFound
+	case nil:
+		break
+	}
+
+	if invitation.Status == model.InvitationStatusCompleted {
+		return nil, ErrForbidden
+	}
+
+	if err := invitation.Decrypt(); err != nil {
+		logger.Error(err)
+		return nil, ErrInternal
+	}
+
+	if invitation.Email != input.Email {
+		return nil, ErrForbidden
+	}
+
+	user := &model.User{
+		ID:       utils.GenerateID(),
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: input.Password,
+		Role:     invitation.Role,
+	}
+
+	if err := user.Encrypt(); err != nil {
+		logger.Error(err)
+		return nil, ErrInternal
+	}
+
+	if err := u.userRepo.Register(ctx, user); err != nil {
+		logger.Error(err)
+		return nil, ErrInternal
+	}
+
+	if err := user.Decrypt(); err != nil {
+		// if err happen, just return nil without error
+		// because it is not affecting the flow
+		// the reason returning nil is i don't want user get the encrypted form of data
+		logger.Error(err)
+		return nil, nil
+	}
+
+	if err := invitation.Encrypt(); err != nil {
+		// if err happen here, i don't want to save unencrypted form of data
+		// so just early return here
+		logger.Error(err)
+		return user, nil
+	}
+
+	if err := u.userRepo.MarkInvitationStatus(ctx, invitation, model.InvitationStatusCompleted); err != nil {
+		// if err happen, just return
+		logger.Error(err)
+	}
+
+	return user, nil
 }
 
 func handleReinviteMember(ctx context.Context, email string) (*model.UserInvitation, error) {

@@ -93,6 +93,21 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByID(arg0, arg1 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepository)(nil).GetUserByID), arg0, arg1)
 }
 
+// GetUserInvitationByInvitationCode mocks base method.
+func (m *MockUserRepository) GetUserInvitationByInvitationCode(arg0 context.Context, arg1 string) (*model.UserInvitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserInvitationByInvitationCode", arg0, arg1)
+	ret0, _ := ret[0].(*model.UserInvitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserInvitationByInvitationCode indicates an expected call of GetUserInvitationByInvitationCode.
+func (mr *MockUserRepositoryMockRecorder) GetUserInvitationByInvitationCode(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserInvitationByInvitationCode", reflect.TypeOf((*MockUserRepository)(nil).GetUserInvitationByInvitationCode), arg0, arg1)
+}
+
 // IsEmailAlreadyInvited mocks base method.
 func (m *MockUserRepository) IsEmailAlreadyInvited(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -120,4 +135,18 @@ func (m *MockUserRepository) MarkInvitationStatus(arg0 context.Context, arg1 *mo
 func (mr *MockUserRepositoryMockRecorder) MarkInvitationStatus(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkInvitationStatus", reflect.TypeOf((*MockUserRepository)(nil).MarkInvitationStatus), arg0, arg1, arg2)
+}
+
+// Register mocks base method.
+func (m *MockUserRepository) Register(arg0 context.Context, arg1 *model.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Register", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Register indicates an expected call of Register.
+func (mr *MockUserRepositoryMockRecorder) Register(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserRepository)(nil).Register), arg0, arg1)
 }
