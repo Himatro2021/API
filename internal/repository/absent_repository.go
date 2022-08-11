@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Himatro2021/API/internal/helper"
 	"github.com/Himatro2021/API/internal/model"
 	"github.com/go-redis/redis/v9"
 	"github.com/kumparan/go-utils"
@@ -80,6 +81,19 @@ func (r *absentRepository) GetParticipantsByFormID(ctx context.Context, id int64
 	if err != nil {
 		logger.Error(err)
 		return participants, err
+	}
+
+	cryptor := helper.Cryptor()
+	for i, c := range participants {
+		decrypted, err := cryptor.Decrypt(c.Name)
+		if err != nil {
+			logger.Error(err)
+			return participants, err
+		}
+
+		c.Name = decrypted
+
+		participants[i] = c
 	}
 
 	return participants, nil

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
 	"testing"
 	"time"
 
@@ -344,10 +345,12 @@ func TestAbsentRepository_GetParticipantsByFormID(t *testing.T) {
 	}
 
 	formID := utils.GenerateID()
+	_ = os.Setenv("PRIVATE_KEY", "supersecret")
+	_ = os.Setenv("IV_KEY", "4e6064d3814c2cd22c550155655fefc6")
 
 	t.Run("ok", func(t *testing.T) {
 		mock.ExpectQuery(`^select .+ from absent_lists al inner join users u ON u.id = al.created_by where al.absent_form_id`).
-			WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow("lucky"))
+			WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow("32dd72fd391d8e334d6de3e5fce4cfcc"))
 
 		result, err := repo.GetParticipantsByFormID(ctx, formID)
 
@@ -482,6 +485,9 @@ func TestAbsentRepo_UpdateParticipantsInAbsentResultCache(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 
+	_ = os.Setenv("PRIVATE_KEY", "supersecret")
+	_ = os.Setenv("IV_KEY", "4e6064d3814c2cd22c550155655fefc6")
+
 	client := redis.NewClient(&redis.Options{
 		Addr: mr.Addr(),
 	})
@@ -515,7 +521,7 @@ func TestAbsentRepo_UpdateParticipantsInAbsentResultCache(t *testing.T) {
 		defer mr.FlushDB()
 
 		mock.ExpectQuery(`^select .+ from absent_lists al inner join users u ON u.id = al.created_by where al.absent_form_id`).
-			WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow("lucky").AddRow("lucky"))
+			WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow("32dd72fd391d8e334d6de3e5fce4cfcc").AddRow("32dd72fd391d8e334d6de3e5fce4cfcc"))
 
 		err = repo.UpdateParticipantsInAbsentResultCache(ctx, cacheKey)
 		assert.NoError(t, err)
